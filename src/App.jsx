@@ -354,7 +354,7 @@ const handleChoosePackage = (packageName) => {
               <Button 
                 className="bg-pink-500 hover:bg-pink-600 hover:scale-105 transform transition-all duration-200 text-white font-semibold text-lg px-6 py-3"
                 onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              >
+              ><ShoppingCart className="mr-2 h-4 w-4" />
                 Pesan Sekarang
               </Button>
             </div>
@@ -976,7 +976,7 @@ const handleChoosePackage = (packageName) => {
     </>
   )}
 </Button>
-              <div className="mt-2">
+              <div className="mt-2"> 
               <img 
                 src="/Payment.png" 
                 alt="Metode Pembayaran" 
