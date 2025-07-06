@@ -167,10 +167,17 @@ const handleChoosePackage = (packageName) => {
           amount: parseInt(harga.replace(',', '')),
           payer_email: formData.email,
           description: `Pembelian ${formData.package}`,
+          invoice_duration: 86400,
           customer: {
             given_names: formData.name,
             email: formData.email,
             mobile_number: formData.phone
+          },
+          customer_notification_preference: {
+            invoice_created: ['email'],
+            invoice_reminder: ['whatsapp', 'email'], 
+            invoice_paid: ['email'],
+            invoice_expired: ['whatsapp', 'email']
           },
           success_redirect_url: `${window.location.origin}?status=success`,
           failure_redirect_url: `${window.location.origin}/failed`
@@ -180,8 +187,15 @@ const handleChoosePackage = (packageName) => {
       const xenditData = await xenditResponse.json();
       
       if (xenditData.invoice_url) {
+        // Format nomor telepon dengan menambahkan 62
+        const formattedPhone = formData.phone.startsWith('0') 
+          ? '62' + formData.phone.substring(1) 
+          : formData.phone.startsWith('62') 
+            ? formData.phone 
+            : '62' + formData.phone;
+
         // Kirim data ke Google Sheets dengan invoice number
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbw-9R5o_UhFaiuea4Sv8abRgNgqQOWIFXyyMOQJmHmIyc-WUN79oJ3YdADvaszkNeOd/exec', {
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycby1eUvCra3NpAIJKc_XT49b_n0SQeK7bq-XoHFMQlmd_qfFy0rosDQ76CBUkwtc8oup/exec', {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -190,13 +204,14 @@ const handleChoosePackage = (packageName) => {
           },
           body: JSON.stringify({
             name: formData.name,
-            phone: formData.phone,
+            phone: formattedPhone,
             email: formData.email,
             package: formData.package,
             idinvoice: xenditData.id,
             invoice: invoiceNumber,
             harga: harga,
-            status: "PENDING"
+            status: "PENDING",
+            invoice_url: xenditData.invoice_url
           })
         });
 
