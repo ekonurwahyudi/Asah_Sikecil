@@ -125,8 +125,15 @@ const handleChoosePackage = (packageName) => {
       const invoiceNumber = `INV-${Date.now()}`;
 
       // Jika paket free, langsung simpan ke Google Sheets
-      if (formData.package === 'free') {
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbw-9R5o_UhFaiuea4Sv8abRgNgqQOWIFXyyMOQJmHmIyc-WUN79oJ3YdADvaszkNeOd/exec', {
+      if (selectedPackage.price === "0") {
+        // Format nomor telepon dengan menambahkan 62
+        const formattedPhone = formData.phone.startsWith('0') 
+          ? '62' + formData.phone.substring(1) 
+          : formData.phone.startsWith('62') 
+            ? formData.phone 
+            : '62' + formData.phone;
+
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec', {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -135,7 +142,7 @@ const handleChoosePackage = (packageName) => {
           },
           body: JSON.stringify({
             name: formData.name,
-            phone: formData.phone,
+            phone: formattedPhone,
             email: formData.email,
             package: formData.package,
             idinvoice: '',
@@ -146,12 +153,8 @@ const handleChoosePackage = (packageName) => {
         });
 
         // Tambahkan delay untuk memastikan data terkirim
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setShowSuccessModal(true); // Tampilkan modal sukses
-        return;
-
-        // Tampilkan modal sukses
-        setShowSuccessModal(true);
         return;
       }
 
@@ -195,7 +198,7 @@ const handleChoosePackage = (packageName) => {
             : '62' + formData.phone;
 
         // Kirim data ke Google Sheets dengan invoice number
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycby1eUvCra3NpAIJKc_XT49b_n0SQeK7bq-XoHFMQlmd_qfFy0rosDQ76CBUkwtc8oup/exec', {
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec', {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -215,8 +218,15 @@ const handleChoosePackage = (packageName) => {
           })
         });
 
+        try {
+          const responseData = await sheetsResponse.text();
+          console.log('Response dari Google Sheets:', responseData);
+        } catch (error) {
+          console.error('Error saat menyimpan ke Google Sheets:', error);
+        }
+
         // Tambahkan delay sebelum redirect untuk memastikan data terkirim
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Redirect ke halaman pembayaran Xendit
         window.location.href = xenditData.invoice_url;
