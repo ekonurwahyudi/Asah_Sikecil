@@ -5,14 +5,16 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
-import { Check, X } from 'lucide-react'
+import { Check, X, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'  // Add this import
 import { CheckCircle, Star, Download, Users, Award, Heart, BookOpen, Palette, Calculator, Puzzle, Scissors, Target, Quote,ShoppingCart, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog.jsx'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel.jsx'
 import './App.css'
 
 function App() {
+   const [api, setApi] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -26,6 +28,23 @@ function App() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1 * 60 * 60 + 43 * 60); // 2 jam dalam detik
+  const [currentBuyer, setCurrentBuyer] = useState(0);
+  const [showBuyerPopup, setShowBuyerPopup] = useState(true);
+
+  // Data pembeli
+  const buyers = [
+    { name: 'Rial Muharni', phone: '6282361******', package: 'Paket Premium' },
+    { name: 'Hidayatshadikin', phone: '6285277******', package: 'Paket Premium' },
+    { name: 'Evi Cristiana', phone: '6281132******', package: 'Paket Premium' },
+    { name: 'Annabiya Putri', phone: '6281215******', package: 'Paket Premium' },
+    { name: 'Musyidah', phone: '6282389******', package: 'Paket Premium' },
+    { name: 'Lisa', phone: '62819389******', package: 'Paket Lengkap' },
+    { name: 'Yogi', phone: '6282389******', package: 'Paket Free' },
+    { name: 'Junita', phone: '6281369******', package: 'Paket Premium' },
+    { name: 'Lisa', phone: '62819389******', package: 'Paket Lengkap' },
+    { name: 'Dona', phone: '6281239******', package: 'Paket Free' },
+    { name: 'Dara', phone: '6281122******', package: 'Paket Premium' },
+  ];
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -36,6 +55,31 @@ function App() {
       // Bersihkan parameter dari URL
       window.history.replaceState({}, '', window.location.pathname);
     }
+  }, []);
+
+  // Effect untuk mengatur popup pembeli
+  useEffect(() => {
+    let timeoutId;
+    const showNextBuyer = () => {
+      setShowBuyerPopup(true);
+      
+      // Sembunyikan popup setelah 3 detik
+      timeoutId = setTimeout(() => {
+        setShowBuyerPopup(false);
+        
+        // Tunggu 3 detik sebelum menampilkan pembeli berikutnya
+        setTimeout(() => {
+          setCurrentBuyer((prev) => (prev + 1) % buyers.length);
+          showNextBuyer();
+        }, 10000);
+      }, 5000);
+    };
+
+    showNextBuyer();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
@@ -244,25 +288,60 @@ const handleChoosePackage = (packageName) => {
   };
   const testimonials = [
     {
-      name: "Ibu Sarah",
-      location: "Jakarta",
+      name: 'Ibu Sarah',
+      location: 'Jakarta',
       rating: 5,
-      text: "Worksheet-nya sangat membantu anak saya belajar menulis. Sekarang dia lebih semangat belajar di rumah!",
-      package: "Paket Lengkap"
+      text: 'Worksheet-nya sangat membantu anak saya belajar menulis, sekarang dia lebih semangat belajar di rumah!',
+      package: 'Paket Lengkap',
+      image: '/testi/testi1.jpg'
     },
     {
-      name: "Ibu Rina",
-      location: "Surabaya", 
+      name: 'Ibu Rina',
+      location: 'Surabaya',
       rating: 5,
-      text: "Kualitas gambarnya bagus banget, anak saya suka sekali dengan aktivitas mewarnainya. Recommended!",
-      package: "Paket Premium"
+      text: 'Kualitas gambarnya bagus banget, anak saya suka sekali dengan aktivitas mewarnainya',
+      package: 'Paket Premium',
+      image: '/testi/testi2.jpg'
     },
     {
-      name: "Ibu Maya",
-      location: "Bandung",
+      name: 'Ibu Maya',
+      location: 'Bandung',
       rating: 5,
-      text: "Harga terjangkau tapi isinya lengkap. Anak jadi lebih fokus dan tidak main gadget terus.",
-      package: "Paket Starter"
+      text: 'Harga terjangkau tapi isinya lengkap. Anak jadi lebih fokus dan tidak main gadget terus',
+      package: 'Paket Premium',
+      image: '/testi/testi3.jpg'
+    },
+    {
+      name: 'Bapak Deni',
+      location: 'Yogyakarta',
+      rating: 5,
+      text: 'Sangat membantu untuk mengajar anak di rumah. Materinya lengkap dan sesuai dengan kurikulum',
+      package: 'Paket Premium',
+      image: '/testi/testi4.jpg'
+    },
+    {
+      name: 'Ibu Anita',
+      location: 'Semarang',
+      rating: 5,
+      text: 'Anak saya jadi lebih tertarik belajar dengan worksheet yang berwarna-warni. Terima kasih!',
+      package: 'Paket Lengkap',
+      image: '/testi/testi5.jpg'
+    },
+    {
+      name: 'Ibu Lina',
+      location: 'Medan',
+      rating: 5,
+      text: 'Worksheet ini sangat membantu perkembangan motorik halus anak saya. Sangat direkomendasikan!',
+      package: 'Paket Premium',
+      image: '/testi/testi6.jpg'
+    },
+    {
+      name: 'Bapak Rudi',
+      location: 'Makassar',
+      rating: 5,
+      text: 'Kualitas terbaik dengan harga terjangkau. Anak-anak sangat menyukai aktivitas di dalamnya',
+      package: 'Paket Premium',
+      image: '/testi/testi7.jpg'
     }
   ];
   const packages = [
@@ -359,19 +438,43 @@ const handleChoosePackage = (packageName) => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Popup Pembeli */}
+      <div className={`fixed bottom-4 left-4 z-50 transition-all duration-500 transform ${showBuyerPopup ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+        <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-bold text-gray-900">
+                {buyers[currentBuyer].name}
+              </p>
+              <p className="text-sm text-gray-500">
+                {buyers[currentBuyer].phone}
+              </p>
+              <p className="text-sm text-gray-500">
+                Baru saja membeli <b>{buyers[currentBuyer].package}</b>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">ASK</span>
-              </div>
-              <span className="text-xl font-bold text-gray-800">Asah Sikecil</span>
+              <img 
+                src="/logo.png" 
+                alt="Logo" 
+                className="w-40 h-8"
+              />
             </div>
             <div className="flex items-center space-x-8">
               <nav className="hidden md:flex space-x-8">
-                <a href="#produk" className="text-gray-600 hover:text-pink-600 transition-colors text-lg font-medium">Produk</a>
+                <a href="#produk" className="text-gray-600 hover:text-pink-600 transition-colors">Produk</a>
                 <a href="#manfaat" className="text-gray-600 hover:text-pink-600 transition-colors">Manfaat</a>
                 <a href="#paket" className="text-gray-600 hover:text-pink-600 transition-colors">Paket</a>
                 <a href="#testimoni" className="text-gray-600 hover:text-pink-600 transition-colors">Testimoni</a>
@@ -408,7 +511,7 @@ const handleChoosePackage = (packageName) => {
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center space-x-2 text-gray-600">
                   <CheckCircle className="w-6 h-6 text-green-500 animate-bounce" />
-                  <span>500+ Worksheet Siap Pakai</span>
+                  <span>12.000++ Worksheet Siap Pakai</span>
                 </div>
                 <div className="flex items-center space-x-2 text-gray-600">
                   <CheckCircle className="w-5 h-5 text-green-500" />
@@ -633,7 +736,7 @@ const handleChoosePackage = (packageName) => {
               Koleksi Terlengkap
             </Badge>
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-              500+ Worksheet Edukatif Siap Pakai
+              12.000++ Worksheet Edukatif Siap Pakai
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Berbagai kategori worksheet untuk mengembangkan kemampuan anak secara menyeluruh
@@ -786,7 +889,7 @@ const handleChoosePackage = (packageName) => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-600">12.500+ Worksheet Lengkap</span>
+                    <span className="text-gray-600">12.000++ Worksheet Lengkap</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -814,7 +917,7 @@ const handleChoosePackage = (packageName) => {
                   </div>
                 </div>
                 <Button 
-  className="w-full bg-blue-500 hover:bg-blue-600 text-white" 
+  className="w-full bg-pink-500 hover:bg-pink-600 text-white" 
   onClick={() => handleChoosePackage("Paket Premium")} 
 > 
   Pilih Paket Premium 
@@ -828,8 +931,8 @@ const handleChoosePackage = (packageName) => {
 
       {/* Testimonials */}
       <section id="testimoni" className="py-16 bg-gradient-to-br from-pink-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 px-4">
             <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 mb-4">
               Testimoni
             </Badge>
@@ -841,34 +944,70 @@ const handleChoosePackage = (packageName) => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardHeader>
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">{testimonial.name.charAt(4)}</span>
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg text-gray-800">{testimonial.name}</CardTitle>
-                      <CardDescription className="text-gray-600">{testimonial.location}</CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Quote className="w-8 h-8 text-gray-300 mb-2" />
-                  <p className="text-gray-700 italic mb-4">"{testimonial.text}"</p>
-                  <Badge variant="outline" className="text-xs">
-                    {testimonial.package}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="relative px-12">
+            <Carousel 
+              className="w-full"
+              opts={{
+                align: "start",
+                loop: true,
+                dragFree: true
+              }}
+              setApi={setApi}
+            >
+              <CarouselContent className="-ml-2 mb-4 md:-ml-3 lg:-ml-4">
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index} className="pl-2 md:pl-3 lg:pl-4 md:basis-1/2 lg:basis-1/3">
+                    <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+                      <CardHeader>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 overflow-hidden rounded-full">
+                              <img 
+                                src={testimonial.image} 
+                                alt={testimonial.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div>
+                              <CardTitle className="text-lg text-gray-800">{testimonial.name}</CardTitle>
+                              <CardDescription className="text-gray-600">{testimonial.location}</CardDescription>
+                            </div>
+                          </div>
+                          <Quote className="w-8 h-8 text-gray-300 ml-auto" />
+                        </div>
+                        <div className="flex items-center space-x-1 mt-2">
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-700 italic mb-4">"{testimonial.text}"</p>
+                        <Badge variant="outline" className="text-xs">
+                          {testimonial.package}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="absolute -left-4 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 rounded-full shadow-lg border-gray-200"
+                onClick={() => api?.scrollPrev()}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 rounded-full shadow-lg border-gray-200"
+                onClick={() => api?.scrollNext()}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Carousel>
           </div>
         </div>
       </section>
