@@ -11,6 +11,7 @@ import { CheckCircle, Star, Download, Users, Award, Heart, BookOpen, Palette, Ca
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog.jsx'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel.jsx'
+import ImageZoom from './components/ImageZoom'
 import './App.css'
 
 function App() {
@@ -296,7 +297,7 @@ const handleChoosePackage = (packageName) => {
       image: '/testi/testi1.jpg'
     },
     {
-      name: 'Ibu Rina',
+      name: 'Bunda Rina',
       location: 'Surabaya',
       rating: 5,
       text: 'Kualitas gambarnya bagus banget, anak saya suka sekali dengan aktivitas mewarnainya',
@@ -312,7 +313,7 @@ const handleChoosePackage = (packageName) => {
       image: '/testi/testi3.jpg'
     },
     {
-      name: 'Bapak Deni',
+      name: 'Ibu Rial',
       location: 'Yogyakarta',
       rating: 5,
       text: 'Sangat membantu untuk mengajar anak di rumah. Materinya lengkap dan sesuai dengan kurikulum',
@@ -320,7 +321,7 @@ const handleChoosePackage = (packageName) => {
       image: '/testi/testi4.jpg'
     },
     {
-      name: 'Ibu Anita',
+      name: 'Moms Anita',
       location: 'Semarang',
       rating: 5,
       text: 'Anak saya jadi lebih tertarik belajar dengan worksheet yang berwarna-warni. Terima kasih!',
@@ -336,7 +337,7 @@ const handleChoosePackage = (packageName) => {
       image: '/testi/testi6.jpg'
     },
     {
-      name: 'Bapak Rudi',
+      name: 'Bunda Evi',
       location: 'Makassar',
       rating: 5,
       text: 'Kualitas terbaik dengan harga terjangkau. Anak-anak sangat menyukai aktivitas di dalamnya',
@@ -474,8 +475,8 @@ const handleChoosePackage = (packageName) => {
             </div>
             <div className="flex items-center space-x-8">
               <nav className="hidden md:flex space-x-8">
-                <a href="#produk" className="text-gray-600 hover:text-pink-600 transition-colors">Produk</a>
                 <a href="#manfaat" className="text-gray-600 hover:text-pink-600 transition-colors">Manfaat</a>
+                <a href="#produk" className="text-gray-600 hover:text-pink-600 transition-colors">Produk</a>
                 <a href="#paket" className="text-gray-600 hover:text-pink-600 transition-colors">Paket</a>
                 <a href="#testimoni" className="text-gray-600 hover:text-pink-600 transition-colors">Testimoni</a>
               </nav>
@@ -496,7 +497,7 @@ const handleChoosePackage = (packageName) => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-6">
-                <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 ">
                   ✨ Worksheet Terlengkap di Indonesia
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-bold text-gray-800 leading-tight">
@@ -536,9 +537,10 @@ const handleChoosePackage = (packageName) => {
               <div className="flex items-center space-x-6 pt-4">
                 <div className="flex items-center space-x-2">
                   <div className="flex -space-x-2">
-                    <div className="w-8 h-8 bg-pink-400 rounded-full border-2 border-white"></div>
-                    <div className="w-8 h-8 bg-blue-400 rounded-full border-2 border-white"></div>
-                    <div className="w-8 h-8 bg-yellow-400 rounded-full border-2 border-white"></div>
+                    {/* Mengganti lingkaran warna dengan foto testimonial */}
+                    <img src="/testi/testi1.jpg" alt="Testimonial 1" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                    <img src="/testi/testi2.jpg" alt="Testimonial 2" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                    <img src="/testi/testi3.jpg" alt="Testimonial 3" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                   </div>
                   <span className="text-sm text-gray-600">2000+ Orang Tua Puas</span>
                 </div>
@@ -581,7 +583,7 @@ const handleChoosePackage = (packageName) => {
       </section>
 
       {/* Value Proposition */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
@@ -634,41 +636,6 @@ const handleChoosePackage = (packageName) => {
                 </CardDescription>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Product Features */}
-      <section className="py-20 bg-gradient-to-r from-pink-100 to-blue-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 mb-4">
-              Fitur Unggulan
-            </Badge>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
-              Aktivitas Lengkap untuk Perkembangan Anak
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Setiap worksheet dirancang untuk mengembangkan berbagai aspek kemampuan anak
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <CardHeader>
-                  <div className={`w-12 h-12 bg-gradient-to-r ${feature.color} rounded-lg flex items-center justify-center mb-3`}>
-                    <feature.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <CardTitle className="text-lg text-gray-800">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-gray-600">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </div>
       </section>
@@ -728,8 +695,9 @@ const handleChoosePackage = (packageName) => {
         </div>
       </section>
 
+
       {/* Product Overview */}
-      <section id="produk" className="py-16 bg-gradient-to-br from-pink-50 to-blue-50">
+      <section id="produk" className="py-16 bg-gradient-to-r from-pink-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200 mb-4">
@@ -745,33 +713,134 @@ const handleChoosePackage = (packageName) => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: "Belajar Alfabet & Menulis", count: "150+", color: "from-pink-400 to-pink-500" },
-              { title: "Belajar Berhitung & Matematika", count: "120+", color: "from-blue-400 to-blue-500" },
-              { title: "Menghubungkan Kata & Gambar", count: "80+", color: "from-yellow-400 to-yellow-500" },
-              { title: "Mencocokkan Gambar & Pola", count: "70+", color: "from-green-400 to-green-500" },
-              { title: "Mewarnai & Kreativitas", count: "60+", color: "from-purple-400 to-purple-500" },
-              { title: "Aktivitas Motorik Halus", count: "50+", color: "from-indigo-400 to-indigo-500" }
+              { title: "Belajar Alfabet & Menulis", icon: BookOpen, color: "from-pink-400 to-pink-500", image: "/images/sample-alfabet.jpg" },
+              { title: "Belajar Berhitung & Matematika", icon: Calculator, color: "from-blue-400 to-blue-500", image: "/images/sample-matematika.jpg" },
+              { title: "Menghubungkan Kata & Gambar", icon: Puzzle, color: "from-yellow-400 to-yellow-500", image: "/images/sample-kata.jpg" },
+              { title: "Mencocokkan Gambar & Pola", icon: Target, color: "from-green-400 to-green-500", image: "/images/sample-pola.jpg" },
+              { title: "Mewarnai & Kreativitas", icon: Palette, color: "from-purple-400 to-purple-500", image: "/images/sample-mewarnai.jpg" },
+              { title: "Aktivitas Motorik Halus", icon: Scissors, color: "from-indigo-400 to-indigo-500", image: "/images/sample-motorik.jpg" }
             ].map((category, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" >
                 <CardHeader>
                   <div className={`w-12 h-12 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3`}>
-                    <span className="text-white font-bold text-lg">{category.count}</span>
+                    <category.icon className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-lg text-gray-800">{category.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-600">
+                  <CardDescription className="text-gray-600 mb-4">
                     Worksheet berkualitas tinggi untuk mengembangkan kemampuan {category.title.toLowerCase()}
                   </CardDescription>
+                  
+                  {/* Tambahkan komponen ImageZoom di sini */}
+                  {category.image && (
+                    <div className="mt-4 rounded-lg overflow-hidden">
+                      <ImageZoom 
+                        src={category.image} 
+                        alt={`Contoh worksheet ${category.title}`} 
+                        className="w-full h-auto rounded-lg" 
+                        aspectRatio={4/3}
+                      />
+                      <p className="text-xs text-center text-gray-500 mt-2">Klik untuk memperbesar</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
       </section>
+  
+      {/* Konsultasi Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 mb-4">
+              Konsultasi Online
+            </Badge>
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
+              Konsultasi Pengembangan Anak dengan Calista AI
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Dapatkan saran dan panduan profesional untuk perkembangan optimal anak Anda
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="relative">
+              <div className="rounded-full overflow-hidden">
+                <img 
+                  src="/dokter.png" 
+                  alt="Konsultasi dengan Calista AI" 
+                  className="w-full max-w-lg mx-auto h-auto" 
+                />
+              </div>
+              <div className="absolute top-10 right-10 bg-gradient-to-r from-yellow-400 to-orange-400 text-yellow-900 px-4 py-1.5 rounded-full text-sm font-bold transform rotate-12 shadow-lg border border-yellow-300 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                AI Powered
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-800">
+                  Calista AI Siap Membantu Pengembangan Anak
+                </h3>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Konsultasikan perkembangan anak Anda dengan Calista AI, asisten virtual yang dirancang khusus untuk memberikan saran dan panduan berdasarkan riset terkini tentang perkembangan anak.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xl font-semibold text-gray-800">Fitur Konsultasi:</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-3 p-2 hover:bg-blue-50 rounded-lg transition-all">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shadow-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-700 font-medium">WhatsApp Support</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 hover:bg-purple-50 rounded-lg transition-all">
+                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shadow-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-700 font-medium">Chat Online 24/7</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 hover:bg-green-50 rounded-lg transition-all">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shadow-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-700 font-medium">Konsultasi Fleksibel</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 hover:bg-yellow-50 rounded-lg transition-all">
+                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center shadow-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-700 font-medium">Respon Cepat & Personal</span>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
+                  <span className="font-semibold">Catatan:</span> Calista AI tersedia untuk pengguna <div className="bg-yellow-400 text-yellow-900 font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300">Paket Premium</div> dengan konsultasi tanpa batas selama 2-3 jam melalui WhatsApp.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Package Options */}
-      <section id="paket" className="py-16 bg-white">
+      <section id="paket" className="py-16 bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
@@ -877,7 +946,7 @@ const handleChoosePackage = (packageName) => {
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-gray-800">Paket Premium</CardTitle>
                 <div className="text-3xl font-bold text-pink-600">
-                  <div className="bg-yellow-400 text-yellow-900 font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300">DISKON 80%</div>
+                  <div className="bg-yellow-400 text-yellow-900 font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300 animate-bounce">DISKON 80%</div>
                   <strike className="text-gray-500 text-base">Rp. 250.000</strike> <br />
                   Rp. 47.500
                 </div>
@@ -930,7 +999,7 @@ const handleChoosePackage = (packageName) => {
       </section>
 
       {/* Testimonials */}
-      <section id="testimoni" className="py-16 bg-gradient-to-br from-pink-50 to-blue-50">
+      <section id="testimoni" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 px-4">
             <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 mb-4">
@@ -1013,7 +1082,7 @@ const handleChoosePackage = (packageName) => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-pink-500 to-blue-500">
+      <section className="py-16 bg-gradient-to-r from-pink-400 to-blue-400">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
             Mulai Perjalanan Belajar Anak Sekarang!
@@ -1135,7 +1204,7 @@ const handleChoosePackage = (packageName) => {
     </>
   ) : (
     <>
-      <ShoppingCart className="mr-2 h-4 w-4" />
+      <ShoppingCart className="mr-2 h-7 w-4" />
       Pesan Sekarang
     </>
   )}
