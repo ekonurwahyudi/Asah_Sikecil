@@ -666,30 +666,11 @@ const handleChoosePackage = (packageName) => {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-green-100 to-blue-100 rounded-3xl p-8">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white rounded-xl p-4 shadow-md">
-                    <div className="w-8 h-8 bg-pink-500 rounded-full mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                  </div>
-                  <div className="bg-white rounded-xl p-4 shadow-md">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                  </div>
-                  <div className="bg-white rounded-xl p-4 shadow-md">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                  <div className="bg-white rounded-xl p-4 shadow-md">
-                    <div className="w-8 h-8 bg-green-500 rounded-full mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                    <div className="h-3 bg-gray-200 rounded w-4/5"></div>
-                  </div>
-                </div>
-              </div>
+              <img 
+                src="/tesjpg.jpg" 
+                alt="Fitur Aplikasi" 
+                className="w-full h-auto rounded-2xl" 
+              />
             </div>
           </div>
         </div>
@@ -713,19 +694,21 @@ const handleChoosePackage = (packageName) => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: "Belajar Alfabet & Menulis", icon: BookOpen, color: "from-pink-400 to-pink-500", image: "/images/sample-alfabet.jpg" },
-              { title: "Belajar Berhitung & Matematika", icon: Calculator, color: "from-blue-400 to-blue-500", image: "/images/sample-matematika.jpg" },
+              { title: "Belajar Alfabet & Menulis", icon: BookOpen, color: "from-pink-400 to-pink-500", image: "/alphabet.jpg" },
+              { title: "Belajar Berhitung & Matematika", icon: Calculator, color: "from-blue-400 to-blue-500", image: "/berhitung.jpg" },
               { title: "Menghubungkan Kata & Gambar", icon: Puzzle, color: "from-yellow-400 to-yellow-500", image: "/images/sample-kata.jpg" },
-              { title: "Mencocokkan Gambar & Pola", icon: Target, color: "from-green-400 to-green-500", image: "/images/sample-pola.jpg" },
+              { title: "Mencocokkan Gambar & Pola", icon: Target, color: "from-green-400 to-green-500", image: "/mencocokan_gambar.jpg" },
               { title: "Mewarnai & Kreativitas", icon: Palette, color: "from-purple-400 to-purple-500", image: "/images/sample-mewarnai.jpg" },
               { title: "Aktivitas Motorik Halus", icon: Scissors, color: "from-indigo-400 to-indigo-500", image: "/images/sample-motorik.jpg" }
             ].map((category, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" >
                 <CardHeader>
-                  <div className={`w-12 h-12 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3`}>
-                    <category.icon className="w-6 h-6 text-white" />
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center`}>
+                      <category.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <CardTitle className="text-lg text-gray-800">{category.title}</CardTitle>
                   </div>
-                  <CardTitle className="text-lg text-gray-800">{category.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-gray-600 mb-4">
