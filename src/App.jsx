@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Check, X, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'  // Add this import
-import { CheckCircle, Star, Download, Users, Award, Heart, BookOpen, Palette, Calculator, Puzzle, Scissors, Target, Quote,ShoppingCart, Loader2 } from 'lucide-react'
+import { CheckCircle, Star, Download, Users, Award, Heart, BookOpen, Palette, Calculator, Puzzle, Scissors, Target, Quote, ShoppingCart, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog.jsx'
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel.jsx'
@@ -15,7 +15,8 @@ import ImageZoom from './components/ImageZoom'
 import './App.css'
 
 function App() {
-   const [api, setApi] = useState(null);
+  const navigate = useNavigate();
+  const [api, setApi] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -31,12 +32,13 @@ function App() {
   const [timeLeft, setTimeLeft] = useState(1 * 60 * 60 + 43 * 60); // 2 jam dalam detik
   const [currentBuyer, setCurrentBuyer] = useState(0);
   const [showBuyerPopup, setShowBuyerPopup] = useState(true);
+  const [bannerTimeLeft, setBannerTimeLeft] = useState(48 * 60); // 48 menit dalam detik
 
   // Data pembeli
   const buyers = [
-    { name: 'Rial Muharni', phone: '6282361******', package: 'Paket Premium' },
+    { name: 'Lilis', phone: '6282361******', package: 'Paket Premium' },
     { name: 'Hidayatshadikin', phone: '6285277******', package: 'Paket Premium' },
-    { name: 'Evi Cristiana', phone: '6281132******', package: 'Paket Premium' },
+    { name: 'Diah', phone: '6281132******', package: 'Paket Premium' },
     { name: 'Annabiya Putri', phone: '6281215******', package: 'Paket Premium' },
     { name: 'Musyidah', phone: '6282389******', package: 'Paket Premium' },
     { name: 'Lisa', phone: '62819389******', package: 'Paket Lengkap' },
@@ -96,6 +98,21 @@ function App() {
   
     return () => clearInterval(timer);
   }, []);
+
+  // Tambahkan useEffect baru untuk countdown banner
+  useEffect(() => {
+    const bannerTimer = setInterval(() => {
+      setBannerTimeLeft(prevTime => {
+        if (prevTime <= 0) {
+          clearInterval(bannerTimer);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+  
+    return () => clearInterval(bannerTimer);
+  }, []);
   const formRef = useRef(null);
 
 // Tambahkan fungsi untuk scroll dan memilih paket
@@ -129,6 +146,13 @@ const handleChoosePackage = (packageName) => {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Fungsi untuk memformat waktu banner
+  const formatBannerTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes} menit ${secs.toString().padStart(2, '0')} detik`;
   };
 
   const handleInputChange = (field, value) => {
@@ -525,11 +549,24 @@ const handleChoosePackage = (packageName) => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white px-8 py-4 text-lg">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white px-8 py-4 text-lg"
+                  onClick={() => {
+                    document.getElementById('produk').scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   <Download className="w-5 h-5 mr-2" />
                   Lihat Koleksi Worksheet
                 </Button>
-                <Button size="lg" variant="outline" className="border-pink-300 text-pink-600 hover:bg-pink-50 px-8 py-4 text-lg">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-pink-300 text-pink-600 hover:bg-pink-50 px-8 py-4 text-lg"
+                  onClick={() => {
+                    document.getElementById('paket').scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
                   Coba Gratis
                 </Button>
               </div>
@@ -555,27 +592,17 @@ const handleChoosePackage = (packageName) => {
 
             <div className="relative">
               <div className="bg-gradient-to-br from-pink-200 to-blue-200 rounded-3xl p-8 transform rotate-3 shadow-xl">
-                <div className="bg-white rounded-2xl p-6 transform -rotate-6 shadow-lg">
-                  <div className="space-y-4">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="h-16 bg-pink-100 rounded flex items-center justify-center">
-                        <BookOpen className="w-8 h-8 text-pink-500" />
-                      </div>
-                      <div className="h-16 bg-blue-100 rounded flex items-center justify-center">
-                        <Calculator className="w-8 h-8 text-blue-500" />
-                      </div>
-                      <div className="h-16 bg-yellow-100 rounded flex items-center justify-center">
-                        <Palette className="w-8 h-8 text-yellow-500" />
-                      </div>
-                    </div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                  </div>
+                <div className="bg-white rounded-2xl p-4 transform -rotate-6 shadow-lg">
+                  <img 
+                    src="/keluarga_bahagia.jpg" 
+                    alt="Keluarga Bahagia" 
+                    className="w-full h-auto rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                  />
                 </div>
               </div>
-              <div className="absolute -top-4 -right-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold transform rotate-12">
-                Worksheet Sample
+              <div className="absolute top-2 -right-1 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold transform rotate-19 animate-bounce flex items-center gap-1"> 
+                <Palette className="w-3 h-3" />
+                Learn, Fun, Grow! 
               </div>
             </div>
           </div>
@@ -696,10 +723,10 @@ const handleChoosePackage = (packageName) => {
             {[
               { title: "Belajar Alfabet & Menulis", icon: BookOpen, color: "from-pink-400 to-pink-500", image: "/alphabet.jpg" },
               { title: "Belajar Berhitung & Matematika", icon: Calculator, color: "from-blue-400 to-blue-500", image: "/berhitung.jpg" },
-              { title: "Menghubungkan Kata & Gambar", icon: Puzzle, color: "from-yellow-400 to-yellow-500", image: "/images/sample-kata.jpg" },
+              { title: "Menghubungkan Kata & Gambar", icon: Puzzle, color: "from-yellow-400 to-yellow-500", image: "/menghubungkan_kata.jpg" },
               { title: "Mencocokkan Gambar & Pola", icon: Target, color: "from-green-400 to-green-500", image: "/mencocokan_gambar.jpg" },
-              { title: "Mewarnai & Kreativitas", icon: Palette, color: "from-purple-400 to-purple-500", image: "/images/sample-mewarnai.jpg" },
-              { title: "Aktivitas Motorik Halus", icon: Scissors, color: "from-indigo-400 to-indigo-500", image: "/images/sample-motorik.jpg" }
+              { title: "Mewarnai & Kreativitas", icon: Palette, color: "from-purple-400 to-purple-500", image: "/Mewarnai_kreativitas.jpg" },
+              { title: "Aktivitas Motorik Halus", icon: Scissors, color: "from-indigo-400 to-indigo-500", image: "/Aktivitas_Motorik.jpg" }
             ].map((category, index) => (
               <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" >
                 <CardHeader>
@@ -832,11 +859,58 @@ const handleChoosePackage = (packageName) => {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Berbagai pilihan paket untuk kebutuhan belajar anak Anda
             </p>
+            
+            {/* Banner Promosi Calista AI */}
+             <div className="mt-8 bg-white rounded-xl shadow-xl overflow-hidden mx-auto border border-blue-100 relative">
+              <div className="absolute top-4 right-1 bg-yellow-400 text-yellow-900 font-semibold text-sm px-3 py-1 rounded-full inline-block transform rotate-8 hover:rotate-0 transition-transform duration-300 shadow-sm z-10">
+                GRATISS!!
+              </div>
+              <div className="flex flex-col md:flex-row items-center relative">
+                <div className="md:w-2/5  flex justify-center items-center p-2 relative overflow-hidden">
+                  <div className="absolute -left-10 -top-10 w-40 h-40 bg-blue-100 rounded-full opacity-30"></div>
+                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-pink-100 rounded-full opacity-30"></div>
+                  <img 
+                    src="/dokter.png" 
+                    alt="Calista AI" 
+                    className="w-auto h-auto max-h-[170px] object-contain relative z-10"
+                  />
+                  <div className="absolute top-4 left-4 bg-white bg-opacity-90 p-2 rounded-lg shadow-md z-10 max-w-[170px]">
+                    <div className="text-left text-xs text-gray-800 mb-1">Hai, saya <b>Calista</b> 👋
+                      <br/>Siap membantu kamu 😊</div>
+                  </div>
+                </div>
+                <div className="md:w-3/5 p-6 text-left relative">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    Mau Tau Psikologi dan Perkembangan Sianak?
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w">
+                    Yuk konsultasi dengan <i>Calista AI</i>, gratis untuk <b>50 Orang</b> tercepat.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className="bg-red-100 text-red-600 font-semibold text-sm px-4 py-1.5 rounded-lg shadow-sm border border-red-200 flex items-center">
+                      <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
+                      Sisa kuota: 7 orang lagi
+                    </div>
+                      <div className="bg-blue-100 text-blue-600 font-semibold text-sm px-4 py-1.5 rounded-lg shadow-sm border border-blue-200 flex items-center"> 
+                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span> 
+                      Berakhir dalam: {formatBannerTime(bannerTimeLeft)}
+                    </div>
+                  </div>
+                <div className="absolute bottom-6 right-6 md:right-8">
+                    <Button 
+                className="inline-block bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3 w-[160px] text-lg"
+                onClick={() => navigate('/free-offer')}
+              >Saya Mau! <ArrowRight className="h-10 w-10" />
+              </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Paket Starter */}
-            <Card className="border-2 border-gray-200 hover:border-pink-300 transition-colors duration-300">
+            <Card className="border-2 border-gray-200 hover:border-pink-300 h-[430px] transition-colors duration-300">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-gray-800">Paket Free</CardTitle>
                 <div className="text-3xl font-bold text-gray-800">
@@ -869,13 +943,13 @@ const handleChoosePackage = (packageName) => {
                     <span className="text-gray-600">Tidak Ada Update</span>
                   </div>
                 </div>
-                <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white" onClick={() => handleChoosePackage("Paket Free")}>
+                <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white mt-4 py-3" onClick={() => handleChoosePackage("Paket Free")}>
                   Pilih Paket Free
                 </Button>
               </CardContent>
             </Card>
             {/* Paket Premium */}
-            <Card className="border-2 border-blue-500 hover:border-blue-600 transition-colors duration-300">
+            <Card className="border-2 border-blue-500 hover:border-blue-600 h-[630px] transition-colors duration-300">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-gray-800">Paket Lengkap</CardTitle>
                 <div className="text-3xl font-bold text-blue-600">
@@ -903,12 +977,20 @@ const handleChoosePackage = (packageName) => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-600">Update Gratis 6 Bulan</span>
+                    <span className="text-gray-600">Update Gratis 2 Bulan</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span className="text-gray-600">Bonus Cerita Anak</span>
                   </div>
+                </div>
+                 {/* Bonus Image */}
+                <div className="my-4">
+                  <img 
+                    src="/bonus.jpg" 
+                    alt="Bonus Content" 
+                    className="w-full h-auto duration-300" 
+                  />
                 </div>
                 <Button 
   className="w-full bg-blue-500 hover:bg-blue-600 text-white" 
@@ -957,7 +1039,7 @@ const handleChoosePackage = (packageName) => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-600">Update Gratis 12 Bulan</span>
+                    <span className="text-gray-600">Update Gratis 6 Bulan</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
@@ -967,7 +1049,21 @@ const handleChoosePackage = (packageName) => {
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span className="text-gray-600">Lisensi Jual Kembali</span>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-600">Konsultasi dengan <div className="bg-pink-400 text-pink-900 text-white font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300 animate-bounce">Calista AI</div></span>
+                  </div>
                 </div>
+                
+                {/* Bonus Image */}
+                <div className="my-4">
+                  <img 
+                    src="/bonus.jpg" 
+                    alt="Bonus Content" 
+                    className="w-full h-auto duration-300" 
+                  />
+                </div>
+                
                 <Button 
   className="w-full bg-pink-500 hover:bg-pink-600 text-white" 
   onClick={() => handleChoosePackage("Paket Premium")} 
