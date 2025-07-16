@@ -58,6 +58,9 @@ function App() {
       // Bersihkan parameter dari URL
       window.history.replaceState({}, '', window.location.pathname);
     }
+    // Preload gambar sukses
+  const img = new Image();
+  img.src = '/payment_success.png';
   }, []);
 
   // Effect untuk mengatur popup pembeli
@@ -136,8 +139,12 @@ const handleChoosePackage = (packageName) => {
   // Set paket yang dipilih
   handleInputChange("package", packageId);
   
-  // Scroll ke form
-  formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Scroll ke form dengan offset untuk header
+  if (formRef.current) {
+    const yOffset = -100; // Sesuaikan nilai ini dengan tinggi header
+    const y = formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({top: y, behavior: 'smooth'});
+  }
 };
   
   // Fungsi untuk memformat waktu
@@ -506,7 +513,13 @@ const handleChoosePackage = (packageName) => {
               </nav>
               <Button 
                 className="bg-pink-500 hover:bg-pink-600 hover:scale-105 transform transition-all duration-200 text-white font-semibold text-lg px-6 py-3"
-                onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                onClick={() => {
+                  if (formRef.current) {
+                    const yOffset = -100; // Sesuaikan nilai ini dengan tinggi header
+                    const y = formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                  }
+                }}
               ><ShoppingCart className="mr-2 h-4 w-4" />
                 Pesan Sekarang
               </Button>
@@ -841,7 +854,7 @@ const handleChoosePackage = (packageName) => {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
-                  <span className="font-semibold">Catatan:</span> Calista AI tersedia untuk pengguna <div className="bg-yellow-400 text-yellow-900 font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300">Paket Premium</div> dengan konsultasi tanpa batas selama 2-3 jam melalui WhatsApp.
+                  <span className="font-semibold">Catatan:</span> Calista AI tersedia untuk pengguna <span className="bg-yellow-400 text-yellow-900 font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300">Paket Premium</span> dengan konsultasi tanpa batas selama 2-3 jam melalui WhatsApp.
                 </p>
               </div>
             </div>
@@ -874,7 +887,7 @@ const handleChoosePackage = (packageName) => {
                     alt="Calista AI" 
                     className="w-auto h-auto max-h-[170px] object-contain relative z-10"
                   />
-                  <div className="absolute top-4 left-4 bg-white bg-opacity-90 p-2 rounded-lg shadow-md z-10 max-w-[170px]">
+                  <div className="absolute top-4 left-4 bg-white bg-opacity-90 p-2 rounded-lg shadow-md z-10 max-w-[170px] hidden md:block">
                     <div className="text-left text-xs text-gray-800 mb-1">Hai, saya <b>Calista</b> 👋
                       <br/>Siap membantu kamu 😊</div>
                   </div>
@@ -896,13 +909,13 @@ const handleChoosePackage = (packageName) => {
                       Berakhir dalam: {formatBannerTime(bannerTimeLeft)}
                     </div>
                   </div>
-                <div className="absolute bottom-6 right-6 md:right-8">
-                    <Button 
-                className="inline-block bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3 w-[160px] text-lg"
-                onClick={() => navigate('/free-offer')}
-              >Saya Mau! <ArrowRight className="h-10 w-10" />
-              </Button>
-                  </div>
+                <div className="md:absolute md:bottom-6 md:right-8 relative mt-4 w-full md:w-auto">
+                  <Button 
+                    className="inline-block bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3 w-[160px] text-lg"
+                    onClick={() => navigate('/free-offer')}
+                  >Saya Mau! <ArrowRight className="h-10 w-10" />
+                  </Button>
+                </div>
                 </div>
               </div>
             </div>
@@ -1051,7 +1064,7 @@ const handleChoosePackage = (packageName) => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-600">Konsultasi dengan <div className="bg-pink-400 text-pink-900 text-white font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300 animate-bounce">Calista AI</div></span>
+                    <span className="text-gray-600">Konsultasi dengan <span className="bg-pink-400 text-pink-900 text-white font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300 animate-bounce">Calista AI</span></span>
                   </div>
                 </div>
                 

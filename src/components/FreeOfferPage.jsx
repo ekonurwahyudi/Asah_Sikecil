@@ -1,14 +1,17 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { X, Copy, Upload, ArrowLeft } from 'lucide-react'
+import { Dialog, DialogContent } from '@/components/ui/dialog.jsx'
 
 function FreeOfferPage() {
   const navigate = useNavigate();
   const [uploadedImages, setUploadedImages] = useState([]);
   const [formStep, setFormStep] = useState(1); // 1: upload gambar, 2: input data
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Tambahkan state untuk loading
   const [userFormData, setUserFormData] = useState({
     name: "",
     phone: "",
@@ -16,11 +19,36 @@ function FreeOfferPage() {
     city: ""
   });
 
+  // Tambahkan useEffect untuk scroll ke atas saat komponen dimuat
+  // Di dalam useEffect
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    
+    // Preload gambar sukses
+    const img = new Image();
+    img.src = '/payment_success.png';
+  }, []);
+
   const handleImageUpload = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      if (uploadedImages.length < 3) {
-        setUploadedImages([...uploadedImages, e.target.files[0]]);
-      } else {
+    if (e.target.files && e.target.files.length > 0) {
+      // Mengambil file yang dipilih (maksimal 3)
+      const newFiles = Array.from(e.target.files).slice(0, 3);
+      
+      // Menghitung berapa banyak slot yang tersisa
+      const remainingSlots = 3 - uploadedImages.length;
+      
+      // Jika slot yang tersisa cukup untuk semua file baru
+      if (remainingSlots >= newFiles.length) {
+        setUploadedImages([...uploadedImages, ...newFiles]);
+      } 
+      // Jika slot yang tersisa tidak cukup, ambil sebanyak yang bisa ditampung
+      else if (remainingSlots > 0) {
+        const filesToAdd = newFiles.slice(0, remainingSlots);
+        setUploadedImages([...uploadedImages, ...filesToAdd]);
+        alert(`Hanya ${remainingSlots} gambar yang ditambahkan. Maksimal 3 gambar yang dapat diupload.`);
+      } 
+      // Jika tidak ada slot tersisa
+      else {
         alert("Maksimal 3 gambar yang dapat diupload. Hapus salah satu gambar terlebih dahulu.");
       }
     }
@@ -34,31 +62,73 @@ function FreeOfferPage() {
   };
 
   const handleCopyCaption = () => {
-    const caption = "🤖 CALISTA AI - Asisten Psikologi Anak 🤖\n\nKonsultasi GRATIS dengan AI Psikolog Anak! Tanya apapun tentang perkembangan dan psikologi anak.\n\n✅ Jawaban cepat & akurat\n✅ Berbasis riset terkini\n✅ Tersedia 24/7\n\nKuota terbatas! Cek di: [link website]";
+    const caption = "🤖 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & terpercaya \n✅ Berdasarkan riset dan rekomendasi ahli \n✅ Tersedia 24 jam nonstop \n✅ Mudah diakses via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – koleksi printable berbahasa Indonesia untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
     navigator.clipboard.writeText(caption);
     alert("Caption berhasil disalin!");
   };
 
-  const handleSubmit = () => {
-    // Di sini kita akan mengirim data ke Google Sheets
-    // Untuk demo, kita hanya menampilkan alert
-    alert(`Terima kasih ${userFormData.name}! Data Anda telah kami terima. Kami akan menghubungi Anda melalui WhatsApp untuk memberikan akses ke Calista AI.`);
-    
-    // Kembali ke halaman utama
-    navigate('/');
-    
-    // Implementasi sebenarnya akan mengirim data ke Google Sheets
-    // Contoh pseudocode:
-    // sendToGoogleSheets({
-    //   name: userFormData.name,
-    //   phone: userFormData.phone,
-    //   email: userFormData.email,
-    //   city: userFormData.city,
-    //   uploadTime: new Date().toISOString()
-    // });
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true); // Set loading menjadi true saat proses dimulai
+      
+      // URL Google Apps Script
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwafJif9Vtf-tivOVKeShcQAPHTZX4BzXmNAfvP6QKZVbI8jpcXBz6EF8w3_j-1aJBkag/exec';
+      
+      // Format nomor telepon
+      let formattedPhone = userFormData.phone;
+      
+      // Jika nomor dimulai dengan '08', ubah menjadi '628'
+      if (formattedPhone.startsWith('08')) {
+        formattedPhone = '62' + formattedPhone.substring(1);
+      }
+      // Jika nomor dimulai dengan '8', tambahkan '62' di depan
+      else if (formattedPhone.startsWith('8')) {
+        formattedPhone = '62' + formattedPhone;
+      }
+      // Jika nomor dimulai dengan '+62', hapus '+'
+      else if (formattedPhone.startsWith('+62')) {
+        formattedPhone = formattedPhone.substring(1);
+      }
+      // Jika nomor dimulai dengan '62', tidak perlu diubah
+      
+      // Menggunakan FormData alih-alih JSON
+      const formData = new FormData();
+      formData.append('name', userFormData.name);
+      formData.append('phone', formattedPhone); // Gunakan nomor yang sudah diformat
+      formData.append('email', userFormData.email);
+      formData.append('city', userFormData.city);
+      
+      // Mengirim data ke Google Sheets
+      const params = new URLSearchParams();
+      params.append('name', userFormData.name);
+      params.append('phone', formattedPhone);
+      params.append('email', userFormData.email);
+      params.append('city', userFormData.city);
+      
+      const response = await fetch(scriptURL, {
+        method: 'POST',
+        body: params.toString(), // Mengubah params menjadi string URL-encoded
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded', // Gunakan content type ini
+        }
+      });
+      
+      // Catatan: dengan mode 'no-cors', kita tidak bisa memeriksa response.ok
+      // karena respons akan selalu opaque (tidak dapat diakses)
+      console.log('Permintaan berhasil dikirim');
+      setShowSuccessModal(true);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+    } finally {
+      setIsLoading(false); // Set loading menjadi false setelah proses selesai
+    }
   };
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         {/* Header dengan tombol kembali */}
@@ -78,13 +148,13 @@ function FreeOfferPage() {
             <ol className="list-decimal pl-5 space-y-2">
               <li>Kamu harus share Calista AI ke 3 grup WhatsApp kamu</li>
               <li>Screenshot dan upload bukti share untuk dapatkan Calista AI</li>
-              <li>Berikut banner dan caption untuk kamu share ke grup WhatsApp:</li>
+              <li>Berikut gambar dan caption untuk kamu share ke grup WhatsApp:</li>
             </ol>
           </div>
           
           {/* Banner dan caption untuk dibagikan */}
           <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="text-md font-semibold mb-2">Banner:</h3>
+            <h3 className="text-md font-semibold mb-2">Gambar:</h3>
             <img 
               src="/dokter.png" 
               alt="Calista AI Banner" 
@@ -93,12 +163,15 @@ function FreeOfferPage() {
             
             <h3 className="text-md font-semibold mb-2">Caption:</h3>
             <div className="bg-gray-100 p-3 rounded-md text-sm">
-              <p>🤖 <b>CALISTA AI - Asisten Psikologi Anak</b> 🤖</p>
-              <p>Konsultasi GRATIS dengan AI Psikolog Anak! Tanya apapun tentang perkembangan dan psikologi anak.</p>
-              <p>✅ Jawaban cepat & akurat</p>
-              <p>✅ Berbasis riset terkini</p>
-              <p>✅ Tersedia 24/7</p>
-              <p>Kuota terbatas! Cek di: [link website]</p>
+              <p>🤖 <b>Calista AI – #1 Asisten Psikologi & Perkembangan Anak!</b></p> <br/>
+              <p>💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak.</p><br/>
+              <p>✅ Jawaban cepat & terpercaya</p>
+              <p>✅ Berdasarkan riset dan rekomendasi ahli</p>
+              <p>✅ Tersedia 24 jam nonstop</p>
+              <p>✅ Mudah diakses via WhatsApp</p><br/>
+              <p>🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – koleksi printable berbahasa Indonesia untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah.</p><br/>
+              <p>📍 Kunjungi sekarang: www.asahsikecil.com</p>
+              <p>📢 Kuota terbatas, jangan sampai kelewatan!</p>
             </div>
             
             <button 
@@ -152,6 +225,7 @@ function FreeOfferPage() {
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="cursor-pointer"
+                  multiple // Tambahkan atribut multiple
                 />
               </div>
               
@@ -224,24 +298,75 @@ function FreeOfferPage() {
                 <div className="flex gap-3 pt-2">
                   <Button 
                     variant="outline" 
-                    className="flex-1"
+                    className="flex-1 flex items-center justify-center gap-2"
                     onClick={() => setFormStep(1)}
                   >
-                    Kembali
+                    <ArrowLeft className="h-4 w-4" /> Kembali
                   </Button>
                   
                   <Button 
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white"
-                    disabled={!userFormData.name || !userFormData.phone || !userFormData.email || !userFormData.city}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-2"
+                    disabled={!userFormData.name || !userFormData.phone || !userFormData.email || !userFormData.city || isLoading}
                     onClick={handleSubmit}
                   >
-                    Kirim
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sedang Diproses...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" /> Submit
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
             </div>
           )}
+          
         </div>
+
+        {/* Dialog Sukses */}
+    <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+      <DialogContent className="sm:max-w-[425px] bg-white rounded-lg p-6">
+        <div className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+          <X className="h-4 w-4" onClick={() => setShowSuccessModal(false)} />
+          <span className="sr-only">Close</span>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center text-center space-y-2">
+          <div className="relative w-50 h-50">
+            <img 
+              src="/payment_success.png" 
+              alt="Success" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+          
+          <h1 className="text-xl font-bold text-gray-900 mb-4">
+            Terima kasih {userFormData.name}!
+          </h1>
+          
+          <p className="text-sm text-gray-500">
+            Data Anda telah kami terima. Kami akan menghubungi Anda melalui WhatsApp untuk memberikan akses ke Calista AI.
+          </p>
+          
+          <button
+            onClick={() => {
+              setShowSuccessModal(false);
+              navigate('/');
+            }}
+            className="mt-4 bg-[#00D154] text-white py-3 px-9 rounded-md text-sm font-medium hover:bg-[#00B848] transition-colors focus:outline-none focus:ring-2 focus:ring-[#00D154] focus:ring-offset-2"
+          >
+            OK
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
       </div>
     </div>
   )
