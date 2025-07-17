@@ -146,7 +146,8 @@ function FreeOfferPage() {
           <div className="bg-blue-50 p-4 rounded-lg">
             <h2 className="text-lg font-semibold text-blue-700 mb-2">Ikuti langkah-langkah berikut:</h2>
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Kamu harus share Calista AI ke 3 grup WhatsApp kamu</li>
+              <li>Follow akun instagram kami ya 👉 <a href="https://www.instagram.com/asahsikecil"><b className='text-pink-500'>@asahsikecil</b></a> 😊</li>
+              <li>Selanjutnya jangan lupa share Calista AI ke 3 grup WhatsApp kamu</li>
               <li>Screenshot dan upload bukti share untuk dapatkan Calista AI</li>
               <li>Berikut gambar dan caption untuk kamu share ke grup WhatsApp:</li>
             </ol>
