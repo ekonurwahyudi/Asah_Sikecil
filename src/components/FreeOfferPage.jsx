@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
-import { X, Copy, Upload, ArrowLeft } from 'lucide-react'
+import { X, Copy, Upload, ArrowLeft, Download } from 'lucide-react'
 import { Dialog, DialogContent } from '@/components/ui/dialog.jsx'
 
 function FreeOfferPage() {
@@ -62,7 +62,7 @@ function FreeOfferPage() {
   };
 
   const handleCopyCaption = () => {
-    const caption = "🤖 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & terpercaya \n✅ Berdasarkan riset dan rekomendasi ahli \n✅ Tersedia 24 jam nonstop \n✅ Mudah diakses via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – koleksi printable berbahasa Indonesia untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
+    const caption = "💡 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & terpercaya \n✅ Berdasarkan riset dan rekomendasi ahli \n✅ Tersedia 24 jam nonstop \n✅ Mudah diakses via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – koleksi printable berbahasa Indonesia untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
     navigator.clipboard.writeText(caption);
     alert("Caption berhasil disalin!");
   };
@@ -157,14 +157,14 @@ function FreeOfferPage() {
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="text-md font-semibold mb-2">Gambar:</h3>
             <img 
-              src="/dokter.png" 
+              src="/banner_calista.png" 
               alt="Calista AI Banner" 
-              className="w-full h-auto max-h-[200px] object-contain mb-4"
+              className="w-full h-auto max-h-[400px] object-contain mb-4"
             />
             
             <h3 className="text-md font-semibold mb-2">Caption:</h3>
             <div className="bg-gray-100 p-3 rounded-md text-sm">
-              <p>🤖 <b>Calista AI – #1 Asisten Psikologi & Perkembangan Anak!</b></p> <br/>
+              <p>💡 <b>Calista AI – #1 Asisten Psikologi & Perkembangan Anak!</b></p> <br/>
               <p>💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak.</p><br/>
               <p>✅ Jawaban cepat & terpercaya</p>
               <p>✅ Berdasarkan riset dan rekomendasi ahli</p>
@@ -175,12 +175,22 @@ function FreeOfferPage() {
               <p>📢 Kuota terbatas, jangan sampai kelewatan!</p>
             </div>
             
-            <button 
-              className="mt-3 w-full bg-green-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2"
-              onClick={handleCopyCaption}
-            >
-              <Copy className="h-4 w-4" /> Salin Caption
-            </button>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button 
+                className="bg-green-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                onClick={handleCopyCaption}
+              >
+                <Copy className="h-4 w-4" /> Salin Caption
+              </button>
+              
+              <a 
+                href="/banner_calista.png" 
+                download="calista_ai_banner.png"
+                className="bg-blue-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+              >
+                <Download className="h-4 w-4" /> Download Gambar
+              </a>
+            </div>
           </div>
           
           {/* Form upload gambar */}
