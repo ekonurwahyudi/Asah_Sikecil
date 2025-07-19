@@ -24,11 +24,20 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://asahsikecil.com/" />
-    
-    <!-- Tambahkan script Midtrans Snap.js -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-Tg3EWP-wjBlTYscF"></script>
-    <script type="module" crossorigin src="/assets/index-C4G1GrrX.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-ddPKCrw3.css">
+    <!-- Tambahkan di bagian head -->
+     <meta http-equiv="Content-Security-Policy" content="
+       default-src 'self';
+       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com https://app.midtrans.com https://d2f3dnuq9p7g7.cloudfront.net https://js-agent.newrelic.com https://bam.nr-data.net https://pay.google.com;
+       connect-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com https://d2f3dnuq9p7g7.cloudfront.net https://js-agent.newrelic.com https://bam.nr-data.net https://pay.google.com;
+       img-src 'self' data: blob: https://d2f3dnuq9p7g7.cloudfront.net;
+       style-src 'self' 'unsafe-inline';
+       font-src 'self' data:;
+       frame-src https://app.sandbox.midtrans.com https://app.midtrans.com https://pay.google.com;
+       child-src https://app.sandbox.midtrans.com https://app.midtrans.com https://pay.google.com;
+     ">
+    <script type="module" crossorigin src="/assets/index-DcHxZ9ZA.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CHeRGz4Z.css">
   </head>
   <body>
     <div id="root"></div>

@@ -164,9 +164,16 @@ const handleChoosePackage = (packageName) => {
   };
 
   const handleInputChange = (field, value) => {
+    // Sanitasi input untuk mencegah XSS
+    let sanitizedValue = value;
+    if (typeof value === 'string') {
+      // Hapus tag HTML berbahaya
+      sanitizedValue = value.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: sanitizedValue
     }));
   };
 
@@ -210,14 +217,12 @@ const handleChoosePackage = (packageName) => {
             ? formData.phone 
             : '62' + formData.phone;
 
-        const sheetsApiUrl = window.location.hostname === 'localhost' 
-          ? '/api/forward-to-sheets'
-          : 'https://asahsikecil.com/api/forward-to-sheets';
-          
-        const sheetsResponse = await fetch(sheetsApiUrl, {
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbw789jEUZsaa5ckEkv4mGnezYQlrqjbK2KDZyC95JWGV6y8Q-BDIxtYCaMNYCcVB64-/exec', {
           method: 'POST',
+          mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify({
             name: formData.name,
@@ -237,104 +242,115 @@ const handleChoosePackage = (packageName) => {
         return;
       }
 
-      // Untuk paket berbayar, lanjutkan dengan Midtrans
+      // Untuk paket berbayar, gunakan Midtrans melalui server.js
       // Format nomor telepon dengan menambahkan 62
       const formattedPhone = formData.phone.startsWith('0') 
         ? '62' + formData.phone.substring(1) 
         : formData.phone.startsWith('62') 
           ? formData.phone 
           : '62' + formData.phone;
+      
+      // Siapkan data untuk Midtrans
+      const midtransData = {
+        transaction_details: {
+          order_id: invoiceNumber,
+          gross_amount: parseInt(harga.replace(',', ''))
+        },
+        customer_details: {
+          first_name: formData.name,
+          email: formData.email,
+          phone: formattedPhone
+        },
+        item_details: [{
+          id: formData.package,
+          price: parseInt(harga.replace(',', '')),
+          quantity: 1,
+          name: `Pembelian ${packages.find(p => p.id === formData.package)?.name || formData.package}`
+        }],
+        callbacks: {
+          finish: `${window.location.origin}?status=success`,
+          error: `${window.location.origin}?status=error`,
+          pending: `${window.location.origin}?status=pending`
+        }
+      };
 
-      // Kirim request ke backend Anda untuk mendapatkan token Midtrans
-      // Ganti URL ini dengan endpoint backend Anda
-      const apiUrl = window.location.hostname === 'localhost' 
-        ? '/api/create-midtrans-transaction'
-        : 'https://asahsikecil.com/api/create-midtrans-transaction';
-
-      const midtransResponse = await fetch(apiUrl, {
+      // Panggil API server.js untuk mendapatkan token Midtrans
+      const serverUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000' 
+        : '';
+        
+      const midtransResponse = await fetch(`${serverUrl}/api/create-midtrans-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          order_id: invoiceNumber,
-          gross_amount: parseInt(harga.replace(',', '')),
-          customer_details: {
-            first_name: formData.name,
-            email: formData.email,
-            phone: formattedPhone
-          },
-          item_details: [{
-            id: formData.package,
-            price: parseInt(harga.replace(',', '')),
-            quantity: 1,
-            name: `Pembelian ${formData.package}`
-          }]
-        })
+        body: JSON.stringify(midtransData)
       });
 
-      const midtransData = await midtransResponse.json();
+      const responseData = await midtransResponse.json();
       
-      if (midtransData.token) {
-        // Kirim data ke Google Sheets dengan invoice number
-        const sheetsApiUrl = window.location.hostname === 'localhost' 
-          ? '/api/forward-to-sheets'
-          : 'https://asahsikecil.com/api/forward-to-sheets';
-          
-        const sheetsResponse = await fetch(sheetsApiUrl, {
+      if (responseData.token) {
+        // Kirim data ke Google Sheets dengan status PENDING
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbw789jEUZsaa5ckEkv4mGnezYQlrqjbK2KDZyC95JWGV6y8Q-BDIxtYCaMNYCcVB64-/exec', {
           method: 'POST',
+          mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify({
             name: formData.name,
             phone: formattedPhone,
             email: formData.email,
             package: formData.package,
-            idinvoice: midtransData.order_id,
+            idinvoice: '',
             invoice: invoiceNumber,
             harga: harga,
             status: "PENDING",
-            invoice_url: midtransData.redirect_url
+            invoice_url: responseData.redirect_url || ''
           })
         });
 
-        try {
-          const responseData = await sheetsResponse.text();
-          console.log('Response dari Google Sheets:', responseData);
-        } catch (error) {
-          console.error('Error saat menyimpan ke Google Sheets:', error);
-        }
-
-        // Tambahkan delay sebelum menampilkan halaman pembayaran Midtrans
+        // Tambahkan delay untuk memastikan data terkirim
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Periksa ketersediaan window.snap sebelum menggunakannya
-        if (window.snap && typeof window.snap.pay === 'function') {
-          window.snap.pay(midtransData.token, {
-            onSuccess: function(result) {
-              // Ketika pembayaran berhasil
-              setShowSuccessModal(true);
-            },
-            onPending: function(result) {
-              // Ketika pembayaran tertunda
-              console.log('Pembayaran tertunda:', result);
-              alert('Pembayaran tertunda, silakan selesaikan pembayaran Anda');
-            },
-            onError: function(result) {
-              // Ketika pembayaran gagal
-              console.error('Pembayaran gagal:', result);
-              alert('Pembayaran gagal, silakan coba lagi');
-            },
-            onClose: function() {
-              // Ketika pengguna menutup popup pembayaran
-              alert('Anda menutup popup pembayaran sebelum menyelesaikan transaksi');
-            }
-          });
-        } else {
-          console.error('Midtrans Snap tidak tersedia');
-          alert('Terjadi kesalahan saat memuat sistem pembayaran. Silakan muat ulang halaman atau coba beberapa saat lagi.');
+        // Gunakan Snap.js untuk menampilkan popup pembayaran
+        try {
+          if (window.snap && responseData.token) {
+            window.snap.pay(responseData.token, {
+              onSuccess: function(result) {
+                // Kirim data ke Google Sheets dengan status SUKSES
+                updatePaymentStatus(invoiceNumber, "SUKSES", result);
+                setShowSuccessModal(true);
+              },
+              onPending: function(result) {
+                // Kirim data ke Google Sheets dengan status PENDING
+                updatePaymentStatus(invoiceNumber, "PENDING", result);
+                alert('Pembayaran dalam proses, silakan selesaikan pembayaran Anda');
+              },
+              onError: function(result) {
+                // Kirim data ke Google Sheets dengan status GAGAL
+                updatePaymentStatus(invoiceNumber, "GAGAL", result);
+                alert('Pembayaran gagal: ' + result.status_message);
+              },
+              onClose: function() {
+                alert('Anda menutup popup pembayaran tanpa menyelesaikan pembayaran');
+              }
+            });
+          } else if (responseData.redirect_url) {
+            // Jika menggunakan redirect_url, arahkan pengguna ke halaman pembayaran
+            window.location.href = responseData.redirect_url;
+          } else {
+            console.error('Midtrans Snap belum dimuat dan redirect URL tidak tersedia');
+            alert('Terjadi kesalahan saat memuat sistem pembayaran. Silakan coba lagi nanti.');
+          }
+        } catch (error) {
+          console.error('Error saat memanggil Midtrans Snap:', error);
+          alert('Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi nanti.');
         }
+      } else if (responseData.redirect_url) {
+        // Jika menggunakan redirect_url, arahkan pengguna ke halaman pembayaran
+        window.location.href = responseData.redirect_url;
       }
     } catch (error) {
       console.error('Error details:', error);
@@ -345,6 +361,39 @@ const handleChoosePackage = (packageName) => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Fungsi untuk update status pembayaran dengan keamanan yang lebih baik
+  const updatePaymentStatus = async (invoiceNumber, status, result) => {
+    try {
+      // Batasi informasi yang dikirim ke Google Sheets
+      const paymentInfo = {
+        update_status: true,
+        idinvoice: invoiceNumber,
+        invoice: invoiceNumber,
+        status: status,
+        // Hanya kirim informasi yang diperlukan dari result
+        payment_details: result ? {
+          transaction_id: result.transaction_id,
+          payment_type: result.payment_type,
+          transaction_status: result.transaction_status,
+          transaction_time: result.transaction_time
+        } : null
+      };
+      
+      await fetch('https://script.google.com/macros/s/AKfycbw789jEUZsaa5ckEkv4mGnezYQlrqjbK2KDZyC95JWGV6y8Q-BDIxtYCaMNYCcVB64-/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentInfo)
+      });
+      
+      console.log('Permintaan pembaruan status pembayaran telah dikirim');
+    } catch (error) {
+      console.error('Error updating payment status:', error);
     }
   };
   const testimonials = [
