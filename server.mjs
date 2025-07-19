@@ -12,6 +12,10 @@ import pkg from 'midtrans-client';
 const { Snap } = pkg;
 import bodyParser from 'body-parser';
 
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { dirname } from 'path';
+
 const app = express();
 
 // Middleware
@@ -140,6 +144,24 @@ app.get('/transaction-status/:order_id', async (req, res) => {
 });
 
 // Mulai server
+// Tambahkan ini di bagian atas file
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Tambahkan ini sebelum middleware lainnya
+// Serve static files dari folder dist
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Tambahkan route untuk menangani semua request yang tidak cocok dengan endpoint API
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// Ubah konfigurasi port
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);

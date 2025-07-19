@@ -245,7 +245,11 @@ const handleChoosePackage = (packageName) => {
 
       // Kirim request ke backend Anda untuk mendapatkan token Midtrans
       // Ganti URL ini dengan endpoint backend Anda
-      const midtransResponse = await fetch('/api/create-midtrans-transaction', {
+      const apiUrl = window.location.hostname === 'localhost' 
+        ? '/api/create-midtrans-transaction'
+        : 'https://asahsikecil.com/api/create-midtrans-transaction';
+
+      const midtransResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
