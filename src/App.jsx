@@ -210,12 +210,14 @@ const handleChoosePackage = (packageName) => {
             ? formData.phone 
             : '62' + formData.phone;
 
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbwuCVUXswwCxONgmEwJ4gJXZKD86TA8Rwf6PxLcOAt4S9eZjd0MUMfSrbmMmaIQbe2s/exec', {
+        const sheetsApiUrl = window.location.hostname === 'localhost' 
+          ? '/api/forward-to-sheets'
+          : 'https://asahsikecil.com/api/forward-to-sheets';
+          
+        const sheetsResponse = await fetch(sheetsApiUrl, {
           method: 'POST',
-          mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             name: formData.name,
@@ -275,12 +277,14 @@ const handleChoosePackage = (packageName) => {
       
       if (midtransData.token) {
         // Kirim data ke Google Sheets dengan invoice number
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbwuCVUXswwCxONgmEwJ4gJXZKD86TA8Rwf6PxLcOAt4S9eZjd0MUMfSrbmMmaIQbe2s/exec', {
+        const sheetsApiUrl = window.location.hostname === 'localhost' 
+          ? '/api/forward-to-sheets'
+          : 'https://asahsikecil.com/api/forward-to-sheets';
+          
+        const sheetsResponse = await fetch(sheetsApiUrl, {
           method: 'POST',
-          mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             name: formData.name,
