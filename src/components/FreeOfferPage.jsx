@@ -27,6 +27,7 @@ function FreeOfferPage() {
     // Preload gambar sukses
     const img = new Image();
     img.src = '/payment_success.png';
+    img.src = '/banner_calista.png';
   }, []);
 
   const handleImageUpload = (e) => {
@@ -62,7 +63,7 @@ function FreeOfferPage() {
   };
 
   const handleCopyCaption = () => {
-    const caption = "💡 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & terpercaya \n✅ Berdasarkan riset dan rekomendasi ahli \n✅ Tersedia 24 jam nonstop \n✅ Mudah diakses via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – koleksi printable berbahasa Indonesia untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
+    const caption = "💡 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi *GRATIS* kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & terpercaya \n✅ Tersedia 24 jam \n✅ Chat via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – Untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
     navigator.clipboard.writeText(caption);
     alert("Caption berhasil disalin!");
   };
@@ -167,10 +168,9 @@ function FreeOfferPage() {
               <p>💡 <b>Calista AI – #1 Asisten Psikologi & Perkembangan Anak!</b></p> <br/>
               <p>💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak.</p><br/>
               <p>✅ Jawaban cepat & terpercaya</p>
-              <p>✅ Berdasarkan riset dan rekomendasi ahli</p>
-              <p>✅ Tersedia 24 jam nonstop</p>
-              <p>✅ Mudah diakses via WhatsApp</p><br/>
-              <p>🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – koleksi printable berbahasa Indonesia untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah.</p><br/>
+              <p>✅ Tersedia 24 Jam</p>
+              <p>✅ Chat via WhatsApp</p><br/>
+              <p>🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – Untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah.</p><br/>
               <p>📍 Kunjungi sekarang: www.asahsikecil.com</p>
               <p>📢 Kuota terbatas, jangan sampai kelewatan!</p>
             </div>
