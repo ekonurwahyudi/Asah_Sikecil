@@ -53,8 +53,38 @@ function App() {
     window.scrollTo(0, 0);
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
+    const orderId = urlParams.get('order_id');
+    const transactionStatus = urlParams.get('transaction_status');
     
-    if (status === 'success') {
+    if (status && orderId) {
+      // Bersihkan URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Update status berdasarkan parameter
+      if (status === 'success' || transactionStatus === 'capture' || transactionStatus === 'settlement') {
+        updatePaymentStatus(orderId, "SUKSES", { 
+          transaction_id: orderId,
+          transaction_status: transactionStatus || 'success'
+        });
+        setShowSuccessModal(true);
+      } else if (status === 'pending' || transactionStatus === 'pending') {
+        updatePaymentStatus(orderId, "PENDING", {
+          transaction_id: orderId,
+          transaction_status: transactionStatus || 'pending'
+        });
+        alert('Pembayaran dalam proses, silakan selesaikan pembayaran Anda');
+      } else {
+        updatePaymentStatus(orderId, "GAGAL", {
+          transaction_id: orderId,
+          transaction_status: transactionStatus || 'failed'
+        });
+        alert('Pembayaran gagal atau dibatalkan');
+      }
+      
+      // Bersihkan localStorage
+      localStorage.removeItem('currentInvoice');
+      localStorage.removeItem('paymentStatus');
+    } else if (status === 'success') {
       setShowSuccessModal(true);
       // Bersihkan parameter dari URL
       window.history.replaceState({}, '', window.location.pathname);
@@ -314,39 +344,17 @@ const handleChoosePackage = (packageName) => {
         // Tambahkan delay untuk memastikan data terkirim
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Gunakan Snap.js untuk menampilkan popup pembayaran
-        try {
-          if (window.snap && responseData.token) {
-            window.snap.pay(responseData.token, {
-              onSuccess: function(result) {
-                // Kirim data ke Google Sheets dengan status SUKSES
-                updatePaymentStatus(invoiceNumber, "SUKSES", result);
-                setShowSuccessModal(true);
-              },
-              onPending: function(result) {
-                // Kirim data ke Google Sheets dengan status PENDING
-                updatePaymentStatus(invoiceNumber, "PENDING", result);
-                alert('Pembayaran dalam proses, silakan selesaikan pembayaran Anda');
-              },
-              onError: function(result) {
-                // Kirim data ke Google Sheets dengan status GAGAL
-                updatePaymentStatus(invoiceNumber, "GAGAL", result);
-                alert('Pembayaran gagal: ' + result.status_message);
-              },
-              onClose: function() {
-                alert('Anda menutup popup pembayaran tanpa menyelesaikan pembayaran');
-              }
-            });
-          } else if (responseData.redirect_url) {
-            // Jika menggunakan redirect_url, arahkan pengguna ke halaman pembayaran
-            window.location.href = responseData.redirect_url;
-          } else {
-            console.error('Midtrans Snap belum dimuat dan redirect URL tidak tersedia');
-            alert('Terjadi kesalahan saat memuat sistem pembayaran. Silakan coba lagi nanti.');
-          }
-        } catch (error) {
-          console.error('Error saat memanggil Midtrans Snap:', error);
-          alert('Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi nanti.');
+        // Langsung redirect ke halaman pembayaran Midtrans
+        if (responseData.redirect_url) {
+          // Simpan invoice number ke localStorage untuk tracking
+          localStorage.setItem('currentInvoice', invoiceNumber);
+          localStorage.setItem('paymentStatus', 'PENDING');
+          
+          // Redirect ke halaman pembayaran Midtrans
+          window.location.href = responseData.redirect_url;
+        } else {
+          console.error('Redirect URL tidak tersedia');
+          alert('Terjadi kesalahan saat memuat sistem pembayaran. Silakan coba lagi nanti.');
         }
       } else if (responseData.redirect_url) {
         // Jika menggunakan redirect_url, arahkan pengguna ke halaman pembayaran

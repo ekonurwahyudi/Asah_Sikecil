@@ -58,7 +58,11 @@ app.post('/api/create-midtrans-token', async (req, res) => {
       transaction_details,
       customer_details,
       item_details,
-      callbacks
+      callbacks: {
+        finish: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=success`,
+        error: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=error`,
+        pending: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=pending`
+      }
     });
 
     // Kembalikan token ke frontend
@@ -112,15 +116,34 @@ app.post('/api/midtrans-notification', async (req, res) => {
 });
 
 // Tambahkan setelah middleware CORS
+// Konfigurasi CSP yang tepat untuk Midtrans Snap
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
-      defaultSrc: ["'self'", '*'],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", '*'],
-      connectSrc: ["'self'", "'unsafe-inline'", '*'],
-      imgSrc: ["'self'", 'data:', 'blob:', "'unsafe-inline'", '*'],
-      frameSrc: ['*'],
-      styleSrc: ["'self'", "'unsafe-inline'", '*'],
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'",
+        "*.midtrans.com",
+        "*.veritrans.co.id",
+        "*.mixpanel.com",
+        "*.google-analytics.com",
+        "*.cloudfront.net"
+      ],
+      connectSrc: [
+        "'self'", 
+        "'unsafe-eval'",
+        "*.midtrans.com",
+        "*.veritrans.co.id",
+        "*.mixpanel.com",
+        "*.google-analytics.com",
+        "*.cloudfront.net"
+      ],
+      imgSrc: ["'self'", "data:", "blob:", "*.midtrans.com", "*.veritrans.co.id", "*.cloudfront.net"],
+      frameSrc: ["*.midtrans.com", "*.veritrans.co.id"],
+      styleSrc: ["'self'", "'unsafe-inline'", "*.midtrans.com", "*.veritrans.co.id"],
+      fontSrc: ["'self'", "data:", "*.midtrans.com", "*.veritrans.co.id"],
     },
   })
 );
