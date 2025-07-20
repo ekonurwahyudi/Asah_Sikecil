@@ -307,7 +307,7 @@ const handleChoosePackage = (packageName) => {
       // Panggil API server.js untuk mendapatkan token Midtrans
       const serverUrl = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000' 
-        : '';
+        : 'https://asahsikecil.com'; // Gunakan URL lengkap di produksi
         
       const midtransResponse = await fetch(`${serverUrl}/api/create-midtrans-token`, {
         method: 'POST',
@@ -316,6 +316,12 @@ const handleChoosePackage = (packageName) => {
         },
         body: JSON.stringify(midtransData)
       });
+
+      // Periksa tipe konten respons
+      const contentType = midtransResponse.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Respons bukan JSON: ${contentType}`);
+      }
 
       const responseData = await midtransResponse.json();
       
@@ -362,7 +368,10 @@ const handleChoosePackage = (packageName) => {
       }
     } catch (error) {
       console.error('Error details:', error);
-      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      // Tampilkan pesan error yang lebih informatif
+      if (error.message.includes('Respons bukan JSON')) {
+        alert('Terjadi kesalahan pada server pembayaran. Silakan hubungi administrator.');
+      } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
         alert('Gagal terhubung ke server. Mohon periksa koneksi internet Anda.');
       } else {
         alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
