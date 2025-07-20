@@ -50,41 +50,10 @@ function App() {
   ];
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
-    const orderId = urlParams.get('order_id');
-    const transactionStatus = urlParams.get('transaction_status');
     
-    if (status && orderId) {
-      // Bersihkan URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      // Update status berdasarkan parameter
-      if (status === 'success' || transactionStatus === 'capture' || transactionStatus === 'settlement') {
-        updatePaymentStatus(orderId, "SUKSES", { 
-          transaction_id: orderId,
-          transaction_status: transactionStatus || 'success'
-        });
-        setShowSuccessModal(true);
-      } else if (status === 'pending' || transactionStatus === 'pending') {
-        updatePaymentStatus(orderId, "PENDING", {
-          transaction_id: orderId,
-          transaction_status: transactionStatus || 'pending'
-        });
-        alert('Pembayaran dalam proses, silakan selesaikan pembayaran Anda');
-      } else {
-        updatePaymentStatus(orderId, "GAGAL", {
-          transaction_id: orderId,
-          transaction_status: transactionStatus || 'failed'
-        });
-        alert('Pembayaran gagal atau dibatalkan');
-      }
-      
-      // Bersihkan localStorage
-      localStorage.removeItem('currentInvoice');
-      localStorage.removeItem('paymentStatus');
-    } else if (status === 'success') {
+    if (status === 'success') {
       setShowSuccessModal(true);
       // Bersihkan parameter dari URL
       window.history.replaceState({}, '', window.location.pathname);
@@ -194,16 +163,9 @@ const handleChoosePackage = (packageName) => {
   };
 
   const handleInputChange = (field, value) => {
-    // Sanitasi input untuk mencegah XSS
-    let sanitizedValue = value;
-    if (typeof value === 'string') {
-      // Hapus tag HTML berbahaya
-      sanitizedValue = value.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    }
-    
     setFormData(prev => ({
       ...prev,
-      [field]: sanitizedValue
+      [field]: value
     }));
   };
 
@@ -247,7 +209,7 @@ const handleChoosePackage = (packageName) => {
             ? formData.phone 
             : '62' + formData.phone;
 
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbw789jEUZsaa5ckEkv4mGnezYQlrqjbK2KDZyC95JWGV6y8Q-BDIxtYCaMNYCcVB64-/exec', {
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec', {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -272,69 +234,47 @@ const handleChoosePackage = (packageName) => {
         return;
       }
 
-      // Untuk paket berbayar, gunakan Midtrans melalui server.js
-      // Format nomor telepon dengan menambahkan 62
-      const formattedPhone = formData.phone.startsWith('0') 
-        ? '62' + formData.phone.substring(1) 
-        : formData.phone.startsWith('62') 
-          ? formData.phone 
-          : '62' + formData.phone;
-      
-      // Siapkan data untuk Midtrans
-      const midtransData = {
-        transaction_details: {
-          order_id: invoiceNumber,
-          gross_amount: parseInt(harga.replace(',', ''))
-        },
-        customer_details: {
-          first_name: formData.name,
-          email: formData.email,
-          phone: formattedPhone
-        },
-        item_details: [{
-          id: formData.package,
-          price: parseInt(harga.replace(',', '')),
-          quantity: 1,
-          name: `Pembelian ${packages.find(p => p.id === formData.package)?.name || formData.package}`
-        }]
-      };
-
-      // Panggil API server.js untuk mendapatkan token Midtrans
-      // Contoh konfigurasi di App.jsx
-      const serverUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3004' 
-        : 'https://api.asahsikecil.com';
-        
-      const apiUrl = `${serverUrl}/api/create-midtrans-token`;
-      console.log('Sending request to:', apiUrl);
-      console.log('Request data:', JSON.stringify(midtransData, null, 2));
-      
-      const midtransResponse = await fetch(apiUrl, {
+      // Untuk paket berbayar, lanjutkan dengan Xendit
+      const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + btoa('xnd_development_MpbO8bNvQMywUflJVRZw8KuaG7yqXGFnmvY4g4F6ZQqHeoscILqne9a4kbzuZUa:')
         },
-        body: JSON.stringify(midtransData)
+        body: JSON.stringify({
+          external_id: invoiceNumber,
+          amount: parseInt(harga.replace(',', '')),
+          payer_email: formData.email,
+          description: `Pembelian ${formData.package}`,
+          invoice_duration: 86400,
+          customer: {
+            given_names: formData.name,
+            email: formData.email,
+            mobile_number: formData.phone
+          },
+          customer_notification_preference: {
+            invoice_created: ['email'],
+            invoice_reminder: ['whatsapp', 'email'], 
+            invoice_paid: ['email'],
+            invoice_expired: ['whatsapp', 'email']
+          },
+          success_redirect_url: `${window.location.origin}?status=success`,
+          failure_redirect_url: `${window.location.origin}/failed`
+        })
       });
 
-      // Log respons mentah untuk debugging
-      const responseText = await midtransResponse.text();
-      console.log('Raw response:', responseText);
+      const xenditData = await xenditResponse.json();
       
-      // Periksa tipe konten respons
-      const contentType = midtransResponse.headers.get('content-type');
-      console.log('Content-Type:', contentType);
-      
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Respons bukan JSON: ${contentType}\nRaw response: ${responseText.substring(0, 200)}...`);
-      }
+      if (xenditData.invoice_url) {
+        // Format nomor telepon dengan menambahkan 62
+        const formattedPhone = formData.phone.startsWith('0') 
+          ? '62' + formData.phone.substring(1) 
+          : formData.phone.startsWith('62') 
+            ? formData.phone 
+            : '62' + formData.phone;
 
-      // Parse respons sebagai JSON
-      const responseData = JSON.parse(responseText);
-      
-      if (responseData.token) {
-        // Kirim data ke Google Sheets dengan status PENDING
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbw789jEUZsaa5ckEkv4mGnezYQlrqjbK2KDZyC95JWGV6y8Q-BDIxtYCaMNYCcVB64-/exec', {
+        // Kirim data ke Google Sheets dengan invoice number
+        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec', {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -346,78 +286,36 @@ const handleChoosePackage = (packageName) => {
             phone: formattedPhone,
             email: formData.email,
             package: formData.package,
-            idinvoice: '',
+            idinvoice: xenditData.id,
             invoice: invoiceNumber,
             harga: harga,
             status: "PENDING",
-            invoice_url: responseData.redirect_url || ''
+            invoice_url: xenditData.invoice_url
           })
         });
 
-        // Tambahkan delay untuk memastikan data terkirim
+        try {
+          const responseData = await sheetsResponse.text();
+          console.log('Response dari Google Sheets:', responseData);
+        } catch (error) {
+          console.error('Error saat menyimpan ke Google Sheets:', error);
+        }
+
+        // Tambahkan delay sebelum redirect untuk memastikan data terkirim
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Langsung redirect ke halaman pembayaran Midtrans
-        if (responseData.redirect_url) {
-          // Simpan invoice number ke localStorage untuk tracking
-          localStorage.setItem('currentInvoice', invoiceNumber);
-          localStorage.setItem('paymentStatus', 'PENDING');
-          
-          // Redirect ke halaman pembayaran Midtrans
-          window.location.href = responseData.redirect_url;
-        } else {
-          console.error('Redirect URL tidak tersedia');
-          alert('Terjadi kesalahan saat memuat sistem pembayaran. Silakan coba lagi nanti.');
-        }
-      } else if (responseData.redirect_url) {
-        // Jika menggunakan redirect_url, arahkan pengguna ke halaman pembayaran
-        window.location.href = responseData.redirect_url;
+        // Redirect ke halaman pembayaran Xendit
+        window.location.href = xenditData.invoice_url;
       }
     } catch (error) {
       console.error('Error details:', error);
-      // Tampilkan pesan error yang lebih informatif
-      if (error.message.includes('Respons bukan JSON')) {
-        alert('Terjadi kesalahan pada server pembayaran (Sandbox Mode). Silakan hubungi administrator.');
-      } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
         alert('Gagal terhubung ke server. Mohon periksa koneksi internet Anda.');
       } else {
-        alert('Terjadi kesalahan saat memproses pesanan (Sandbox Mode): ' + error.message);
+        alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Fungsi untuk update status pembayaran dengan keamanan yang lebih baik
-  const updatePaymentStatus = async (invoiceNumber, status, result) => {
-    try {
-      // Batasi informasi yang dikirim ke Google Sheets
-      const paymentInfo = {
-        update_status: true,
-        idinvoice: invoiceNumber,
-        invoice: invoiceNumber,
-        status: status,
-        // Hanya kirim informasi yang diperlukan dari result
-        payment_details: result ? {
-          transaction_id: result.transaction_id,
-          payment_type: result.payment_type,
-          transaction_status: result.transaction_status,
-          transaction_time: result.transaction_time
-        } : null
-      };
-      
-      await fetch('https://script.google.com/macros/s/AKfycbw789jEUZsaa5ckEkv4mGnezYQlrqjbK2KDZyC95JWGV6y8Q-BDIxtYCaMNYCcVB64-/exec', {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(paymentInfo)
-      });
-      
-      console.log('Permintaan pembaruan status pembayaran telah dikirim');
-    } catch (error) {
-      console.error('Error updating payment status:', error);
     }
   };
   const testimonials = [
@@ -631,7 +529,7 @@ const handleChoosePackage = (packageName) => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-10 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
@@ -999,7 +897,7 @@ const handleChoosePackage = (packageName) => {
                     Mau Tau Psikologi dan Perkembangan Sianak?
                   </h3>
                   <p className="text-gray-600 mb-6 max-w">
-                    Yuk konsultasi dengan <i className="text-pink-600 font-bold">Calista AI</i>, gratis untuk <b className="text-blue-800">50 Orang</b> tercepat.
+                    Yuk konsultasi dengan <i>Calista AI</i>, gratis untuk <b>50 Orang</b> tercepat.
                   </p>
                   <div className="flex flex-wrap items-center gap-3 mb-4">
                     <div className="bg-red-100 text-red-600 font-semibold text-sm px-4 py-1.5 rounded-lg shadow-sm border border-red-200 flex items-center">
