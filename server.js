@@ -30,6 +30,38 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.static('dist'));
 
+// Konfigurasi CSP yang tepat untuk Midtrans Snap
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'",
+        "*.midtrans.com",
+        "*.veritrans.co.id",
+        "*.mixpanel.com",
+        "*.google-analytics.com",
+        "*.cloudfront.net"
+      ],
+      connectSrc: [
+        "'self'", 
+        "'unsafe-eval'",
+        "*.midtrans.com",
+        "*.veritrans.co.id",
+        "*.mixpanel.com",
+        "*.google-analytics.com",
+        "*.cloudfront.net"
+      ],
+      imgSrc: ["'self'", "data:", "blob:", "*.midtrans.com", "*.veritrans.co.id", "*.cloudfront.net"],
+      frameSrc: ["*.midtrans.com", "*.veritrans.co.id"],
+      styleSrc: ["'self'", "'unsafe-inline'", "*.midtrans.com", "*.veritrans.co.id"],
+      fontSrc: ["'self'", "data:", "*.midtrans.com", "*.veritrans.co.id"],
+    },
+  })
+);
+
 // Tambahkan rate limiter di sini, sebelum endpoint API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
@@ -65,10 +97,15 @@ app.post('/api/create-midtrans-token', async (req, res) => {
       }
     });
 
+    // Pastikan respons valid sebelum mengirim
+    if (!transaction || (!transaction.token && !transaction.redirect_url)) {
+      throw new Error('Invalid response from Midtrans');
+    }
+
     // Kembalikan token ke frontend
     return res.status(200).json({
-      token: transaction.token,
-      redirect_url: transaction.redirect_url
+      token: transaction.token || null,
+      redirect_url: transaction.redirect_url || null
     });
   } catch (error) {
     console.error('Error creating Midtrans token:', error);
@@ -115,38 +152,6 @@ app.post('/api/midtrans-notification', async (req, res) => {
   }
 });
 
-// Tambahkan setelah middleware CORS
-// Konfigurasi CSP yang tepat untuk Midtrans Snap
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'", 
-        "'unsafe-inline'", 
-        "'unsafe-eval'",
-        "*.midtrans.com",
-        "*.veritrans.co.id",
-        "*.mixpanel.com",
-        "*.google-analytics.com",
-        "*.cloudfront.net"
-      ],
-      connectSrc: [
-        "'self'", 
-        "'unsafe-eval'",
-        "*.midtrans.com",
-        "*.veritrans.co.id",
-        "*.mixpanel.com",
-        "*.google-analytics.com",
-        "*.cloudfront.net"
-      ],
-      imgSrc: ["'self'", "data:", "blob:", "*.midtrans.com", "*.veritrans.co.id", "*.cloudfront.net"],
-      frameSrc: ["*.midtrans.com", "*.veritrans.co.id"],
-      styleSrc: ["'self'", "'unsafe-inline'", "*.midtrans.com", "*.veritrans.co.id"],
-      fontSrc: ["'self'", "data:", "*.midtrans.com", "*.veritrans.co.id"],
-    },
-  })
-);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
