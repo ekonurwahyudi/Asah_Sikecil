@@ -79,8 +79,27 @@ let snap = new Snap({
   clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
 
+// Tambahkan di bagian atas file, setelah impor
+import { Router } from 'express';
+
+// Tambahkan sebelum konfigurasi Midtrans
+const apiRouter = Router();
+
+// Pindahkan middleware rate limiter ke router API
+apiRouter.use(apiLimiter);
+
+// Endpoint status
+apiRouter.get('/status', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    server: 'Asah Sikecil API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Endpoint untuk membuat token transaksi Midtrans
-app.post('/api/create-midtrans-token', async (req, res) => {
+apiRouter.post('/create-midtrans-token', async (req, res) => {
   try {
     const { transaction_details, customer_details, item_details, callbacks } = req.body;
 
@@ -88,7 +107,6 @@ app.post('/api/create-midtrans-token', async (req, res) => {
     console.log('Request body:', JSON.stringify(req.body, null, 2));
 
     // Buat transaksi
-    // Di endpoint create-midtrans-token
     const transaction = await snap.createTransaction({
       transaction_details,
       customer_details,
@@ -120,7 +138,7 @@ app.post('/api/create-midtrans-token', async (req, res) => {
 });
 
 // Endpoint untuk menerima notifikasi dari Midtrans
-app.post('/api/midtrans-notification', async (req, res) => {
+apiRouter.post('/midtrans-notification', async (req, res) => {
   try {
     const notification = req.body;
     
@@ -172,6 +190,19 @@ app.get('*', (req, res) => {
   // Kirim file index.html untuk rute frontend
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
+// Tambahkan sebelum rute fallback untuk SPA
+
+// API untuk memeriksa status server
+app.get('/api/status', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    server: 'Asah Sikecil API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+// Gunakan router API dengan prefix /api
+app.use('/api', apiRouter);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

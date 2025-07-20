@@ -300,9 +300,10 @@ const handleChoosePackage = (packageName) => {
       };
 
       // Panggil API server.js untuk mendapatkan token Midtrans
+      // Contoh konfigurasi di App.jsx
       const serverUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3003' 
-        : 'https://asahsikecil.com'; // Gunakan URL lengkap di produksi
+        ? 'http://localhost:3004' 
+        : 'https://api.asahsikecil.com';
         
       const apiUrl = `${serverUrl}/api/create-midtrans-token`;
       console.log('Sending request to:', apiUrl);
