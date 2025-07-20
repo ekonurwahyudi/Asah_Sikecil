@@ -20,10 +20,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware dasar
+// Middleware dasar
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://asahsikecil.com', 'https://www.asahsikecil.com'] 
-    : 'http://localhost:5173', // Port default Vite
+  origin: '*', // Izinkan semua origin untuk debugging
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -162,6 +161,17 @@ app.post('/api/midtrans-notification', async (req, res) => {
   }
 });
 
+// Tambahkan di bagian bawah server.js, sebelum app.listen
+
+// Rute fallback untuk SPA
+app.get('*', (req, res) => {
+  // Jangan tangani permintaan API
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  // Kirim file index.html untuk rute frontend
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -296,12 +296,7 @@ const handleChoosePackage = (packageName) => {
           price: parseInt(harga.replace(',', '')),
           quantity: 1,
           name: `Pembelian ${packages.find(p => p.id === formData.package)?.name || formData.package}`
-        }],
-        callbacks: {
-          finish: `${window.location.origin}?status=success`,
-          error: `${window.location.origin}?status=error`,
-          pending: `${window.location.origin}?status=pending`
-        }
+        }]
       };
 
       // Panggil API server.js untuk mendapatkan token Midtrans
