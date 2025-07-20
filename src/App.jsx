@@ -307,9 +307,13 @@ const handleChoosePackage = (packageName) => {
       // Panggil API server.js untuk mendapatkan token Midtrans
       const serverUrl = window.location.hostname === 'localhost' 
         ? 'http://localhost:3003' 
-        : ''; // Kosongkan untuk menggunakan URL relatif di produksi
+        : 'https://asahsikecil.com'; // Gunakan URL lengkap di produksi
         
-      const midtransResponse = await fetch(`${serverUrl}/api/create-midtrans-token`, {
+      const apiUrl = `${serverUrl}/api/create-midtrans-token`;
+      console.log('Sending request to:', apiUrl);
+      console.log('Request data:', JSON.stringify(midtransData, null, 2));
+      
+      const midtransResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -317,13 +321,20 @@ const handleChoosePackage = (packageName) => {
         body: JSON.stringify(midtransData)
       });
 
+      // Log respons mentah untuk debugging
+      const responseText = await midtransResponse.text();
+      console.log('Raw response:', responseText);
+      
       // Periksa tipe konten respons
       const contentType = midtransResponse.headers.get('content-type');
+      console.log('Content-Type:', contentType);
+      
       if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Respons bukan JSON: ${contentType}`);
+        throw new Error(`Respons bukan JSON: ${contentType}\nRaw response: ${responseText.substring(0, 200)}...`);
       }
 
-      const responseData = await midtransResponse.json();
+      // Parse respons sebagai JSON
+      const responseData = JSON.parse(responseText);
       
       if (responseData.token) {
         // Kirim data ke Google Sheets dengan status PENDING
