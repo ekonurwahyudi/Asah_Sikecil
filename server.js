@@ -13,7 +13,7 @@ import helmet from 'helmet';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3003;
 
 // Untuk akses __dirname dalam modul ES
 const __filename = fileURLToPath(import.meta.url);
