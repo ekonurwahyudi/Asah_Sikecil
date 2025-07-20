@@ -306,8 +306,8 @@ const handleChoosePackage = (packageName) => {
 
       // Panggil API server.js untuk mendapatkan token Midtrans
       const serverUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000' 
-        : 'https://asahsikecil.com'; // Gunakan URL lengkap di produksi
+        ? 'http://localhost:3003' 
+        : ''; // Kosongkan untuk menggunakan URL relatif di produksi
         
       const midtransResponse = await fetch(`${serverUrl}/api/create-midtrans-token`, {
         method: 'POST',
