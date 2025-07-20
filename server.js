@@ -75,7 +75,7 @@ app.use(
 
 // Konfigurasi Midtrans
 let snap = new Snap({
-  isProduction: process.env.NODE_ENV === 'production', // Ubah berdasarkan environment
+  isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
   clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
@@ -89,14 +89,15 @@ app.post('/api/create-midtrans-token', async (req, res) => {
     console.log('Request body:', JSON.stringify(req.body, null, 2));
 
     // Buat transaksi
+    // Di endpoint create-midtrans-token
     const transaction = await snap.createTransaction({
       transaction_details,
       customer_details,
       item_details,
       callbacks: {
-        finish: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=success`,
-        error: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=error`,
-        pending: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=pending`
+        finish: 'https://asahsikecil.com?status=success',
+        error: 'https://asahsikecil.com?status=error',
+        pending: 'https://asahsikecil.com?status=pending'
       }
     });
 

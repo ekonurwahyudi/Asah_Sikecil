@@ -370,11 +370,11 @@ const handleChoosePackage = (packageName) => {
       console.error('Error details:', error);
       // Tampilkan pesan error yang lebih informatif
       if (error.message.includes('Respons bukan JSON')) {
-        alert('Terjadi kesalahan pada server pembayaran. Silakan hubungi administrator.');
+        alert('Terjadi kesalahan pada server pembayaran (Sandbox Mode). Silakan hubungi administrator.');
       } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
         alert('Gagal terhubung ke server. Mohon periksa koneksi internet Anda.');
       } else {
-        alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
+        alert('Terjadi kesalahan saat memproses pesanan (Sandbox Mode): ' + error.message);
       }
     } finally {
       setIsLoading(false);
