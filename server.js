@@ -19,7 +19,7 @@ const port = process.env.PORT || 3003;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware
+// Middleware dasar
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://asahsikecil.com', 'https://www.asahsikecil.com'] 
@@ -30,7 +30,18 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.static('dist'));
 
-// Konfigurasi CSP yang tepat untuk Midtrans Snap
+// Tambahkan rate limiter di sini, sebelum endpoint API
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 100, // Batas 100 request per IP dalam 15 menit
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Terapkan ke semua endpoint API
+app.use('/api/', apiLimiter);
+
+// Konfigurasi CSP yang tepat untuk Midtrans Snap - PINDAHKAN KE SINI
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
@@ -62,20 +73,9 @@ app.use(
   })
 );
 
-// Tambahkan rate limiter di sini, sebelum endpoint API
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 menit
-  max: 100, // Batas 100 request per IP dalam 15 menit
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Terapkan ke semua endpoint API
-app.use('/api/', apiLimiter);
-
 // Konfigurasi Midtrans
 let snap = new Snap({
-  isProduction: false, // Ubah menjadi true untuk produksi
+  isProduction: process.env.NODE_ENV === 'production', // Ubah berdasarkan environment
   serverKey: process.env.MIDTRANS_SERVER_KEY,
   clientKey: process.env.MIDTRANS_CLIENT_KEY
 });
@@ -84,6 +84,9 @@ let snap = new Snap({
 app.post('/api/create-midtrans-token', async (req, res) => {
   try {
     const { transaction_details, customer_details, item_details, callbacks } = req.body;
+
+    // Tambahkan logging untuk debugging
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
 
     // Buat transaksi
     const transaction = await snap.createTransaction({
@@ -96,6 +99,9 @@ app.post('/api/create-midtrans-token', async (req, res) => {
         pending: `${process.env.NODE_ENV === 'production' ? 'https://asahsikecil.com' : 'http://localhost:5173'}?status=pending`
       }
     });
+
+    // Tambahkan logging untuk debugging
+    console.log('Midtrans response:', JSON.stringify(transaction, null, 2));
 
     // Pastikan respons valid sebelum mengirim
     if (!transaction || (!transaction.token && !transaction.redirect_url)) {
@@ -117,6 +123,9 @@ app.post('/api/create-midtrans-token', async (req, res) => {
 app.post('/api/midtrans-notification', async (req, res) => {
   try {
     const notification = req.body;
+    
+    // Tambahkan logging untuk debugging
+    console.log('Notification body:', JSON.stringify(notification, null, 2));
     
     // Verifikasi notifikasi dari Midtrans
     const statusResponse = await snap.transaction.notification(notification);
