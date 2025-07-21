@@ -1,6 +1,0 @@
-PassengerNodejs ~/.asdf/shims/node
-PassengerAppType node
-PassengerStartupFile index.js
-PassengerAppRoot ~/home/mybrempi/Web_Asahsikecil/backend
-PassengerAppEnv production
-PassengerFriendlyErrorPages on
