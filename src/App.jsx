@@ -567,7 +567,7 @@ const handleChoosePackage = (packageName) => {
         customerVaName: formData.name,
         email: formData.email,
         phoneNumber: formattedPhone,
-        callbackUrl: 'https://asahsikecil.com/callback', // URL Google Sheets untuk callback
+        callbackUrl: 'https://asahsikecil.com/api/payment/callback', // URL Google Sheets untuk callback
         returnUrl: `${window.location.origin}?status=success`,
         signature: signature,
         expiryPeriod: 1440 // 24 jam dalam menit
