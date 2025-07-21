@@ -660,7 +660,9 @@ try {
       phone: formattedPhone,
       email: formData.email,
       package: formData.package,
-      amount: harga
+      amount: paymentAmount,
+      merchantOrderId: invoiceNumber,
+      productDetails: productDetails
     })
   });
   
