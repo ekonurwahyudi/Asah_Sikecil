@@ -647,11 +647,10 @@ const handleChoosePackage = (packageName) => {
       console.log('Duitku payment URL:', duitkuData.paymentUrl);
       console.log('Duitku reference:', duitkuData.reference);
       
-      // Kirim data ke Google Sheets dengan invoice number
       // Kirim data ke backend untuk diproses
 try {
   console.log('Mengirim data ke backend...');
-  const backendResponse = await fetch('http://localhost:3004/api/payment/process', {
+  const backendResponse = await fetch('https://asahsikecil.com/api/payment/process', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
