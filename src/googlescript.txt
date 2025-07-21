@@ -1,0 +1,260 @@
+function doOptions(e) { 
+  var headers = { 
+    'Access-Control-Allow-Origin': '*', 
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS', 
+    'Access-Control-Allow-Headers': 'Content-Type, Origin' 
+  }; 
+  
+  return ContentService.createTextOutput() 
+    .setMimeType(ContentService.MimeType.JSON) 
+    .setContent(JSON.stringify({ status: "success" })) 
+    .setHeaders(headers); 
+} 
+
+/**
+ * Fungsi untuk mencatat log ke spreadsheet terpisah untuk debugging
+ * @param {Object} data - Data yang akan dicatat
+ */
+function logToSheet(data) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var logSheet = ss.getSheetByName("Log");
+    
+    // Buat sheet log jika belum ada
+    if (!logSheet) {
+      logSheet = ss.insertSheet("Log");
+      logSheet.appendRow(["Timestamp", "Data"]);
+    }
+    
+    logSheet.appendRow([new Date(), JSON.stringify(data)]);
+  } catch (error) {
+    Logger.log("Error saat mencatat log: " + error.toString());
+  }
+}
+
+
+function doPost(e) { 
+  try { 
+    // Parse data yang diterima 
+    var data = JSON.parse(e.postData.contents); 
+    
+    // Get the spreadsheet 
+    var ss = SpreadsheetApp.getActiveSpreadsheet(); 
+    var sheet = ss.getActiveSheet(); 
+    var lastRow = sheet.getLastRow(); 
+    
+    // Log data yang diterima untuk debugging
+    Logger.log('Data yang diterima: ' + JSON.stringify(data));
+    logToSheet(data);
+    
+    // Jika ada resultCode, ini adalah callback dari Duitku 
+    if (data.resultCode !== undefined) { 
+      // Cari baris dengan invoice number yang sesuai 
+      var dataRange = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()); 
+      var values = dataRange.getValues(); 
+      
+      // Konversi status code Duitku ke status yang lebih deskriptif
+      var paymentStatus = "UNKNOWN";
+      if (data.resultCode === "00") {
+        paymentStatus = "SUCCESS";
+      } else if (data.resultCode === "01") {
+        paymentStatus = "FAILED";
+      } else if (data.resultCode === "02") {
+        paymentStatus = "PENDING";
+      }
+      
+      // Log informasi penting dari callback Duitku
+      var logData = {
+        merchantCode: data.merchantCode,
+        merchantOrderId: data.merchantOrderId,
+        reference: data.reference,
+        resultCode: data.resultCode,
+        amount: data.amount,
+        paymentStatus: paymentStatus
+      };
+      logToSheet(logData);
+      
+      for (var i = 0; i < values.length; i++) { 
+        // Kolom 6 adalah invoice (merchantOrderId dari Duitku) 
+        if (values[i][5] === data.merchantOrderId) { 
+          // Update status di kolom 9 (kolom I) 
+          sheet.getRange(i + 2, 9).setValue(paymentStatus); 
+          // Update reference di kolom 7 (kolom G) jika ada
+          if (data.reference) {
+            sheet.getRange(i + 2, 7).setValue(data.reference);
+          }
+          
+          // Log bahwa update berhasil
+          logToSheet({
+            action: "update_success",
+            merchantOrderId: data.merchantOrderId,
+            row: i + 2,
+            newStatus: paymentStatus
+          });
+          
+          var response = ContentService.createTextOutput(JSON.stringify({ 
+      status: "success", 
+      message: "Payment status updated successfully" 
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+    // Tambahkan header CORS ke respons
+    response.setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin'
+    });
+    
+    return response; 
+        } 
+      } 
+      
+      // Log bahwa invoice tidak ditemukan
+      logToSheet({
+        action: "invoice_not_found",
+        merchantOrderId: data.merchantOrderId
+      });
+      
+      var response = ContentService.createTextOutput(JSON.stringify({ 
+        status: "error", 
+        message: "Invoice not found" 
+      })).setMimeType(ContentService.MimeType.JSON);
+      
+      // Tambahkan header CORS ke respons
+      response.setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Origin'
+      });
+      
+      return response; 
+    } 
+    
+    // Jika ada update_status, ini adalah webhook dari Midtrans (untuk kompatibilitas mundur)
+    else if (data.update_status) { 
+      // Cari baris dengan invoice number yang sesuai 
+      var dataRange = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()); 
+      var values = dataRange.getValues(); 
+      
+      // Log informasi dari callback Midtrans
+      logToSheet({
+        source: "midtrans",
+        update_status: data.update_status,
+        invoice: data.invoice,
+        status: data.status
+      });
+      
+      for (var i = 0; i < values.length; i++) { 
+        // Kolom 6 adalah invoice (order_id dari Midtrans) 
+        if (values[i][5] === data.invoice) { 
+          // Update status di kolom 9 (kolom I) 
+          sheet.getRange(i + 2, 9).setValue(data.status); 
+          
+          // Log bahwa update berhasil
+          logToSheet({
+            action: "midtrans_update_success",
+            invoice: data.invoice,
+            row: i + 2,
+            newStatus: data.status
+          });
+          
+          var response = ContentService.createTextOutput(JSON.stringify({ 
+            status: "success", 
+            message: "Payment status updated successfully" 
+          })).setMimeType(ContentService.MimeType.JSON);
+          
+          // Tambahkan header CORS ke respons
+          response.setHeaders({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Origin'
+          });
+          
+          return response; 
+        } 
+      } 
+      
+      // Log bahwa invoice tidak ditemukan
+      logToSheet({
+        action: "midtrans_invoice_not_found",
+        invoice: data.invoice
+      });
+      
+      var response = ContentService.createTextOutput(JSON.stringify({ 
+        status: "error", 
+        message: "Invoice not found" 
+      })).setMimeType(ContentService.MimeType.JSON);
+      
+      // Tambahkan header CORS ke respons
+      response.setHeaders({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Origin'
+      });
+      
+      return response; 
+    } 
+    
+    // Jika tidak ada resultCode atau update_status, ini adalah data baru dari form 
+    // Log data form yang diterima
+    logToSheet({
+      action: "new_form_data",
+      formData: data
+    });
+    
+    sheet.appendRow([ 
+      new Date(), // Timestamp 
+      data.name, 
+      data.phone, 
+      data.email, 
+      data.package, 
+      data.invoice,    // Invoice number (merchantOrderId untuk Duitku) 
+      data.idinvoice,  // reference untuk Duitku / order_id untuk Midtrans 
+      data.harga, 
+      data.status, 
+      data.invoice_url 
+    ]); 
+    
+    // Log bahwa data berhasil disimpan
+    logToSheet({
+      action: "form_data_saved",
+      invoice: data.invoice,
+      status: data.status
+    });
+    
+    var response = ContentService.createTextOutput(JSON.stringify({ 
+      status: "success", 
+      message: "Data saved successfully" 
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+    // Tambahkan header CORS ke respons
+    response.setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin'
+    });
+    
+    return response; 
+    
+  } catch (error) { 
+    // Log error
+    logToSheet({
+      action: "error",
+      error: error.toString(),
+      data: e.postData ? e.postData.contents : "No data"
+    });
+    
+    var response = ContentService.createTextOutput(JSON.stringify({ 
+      status: "error", 
+      message: error.toString() 
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+    // Tambahkan header CORS ke respons
+    response.setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Origin'
+    });
+    
+    return response; 
+  } 
+}
