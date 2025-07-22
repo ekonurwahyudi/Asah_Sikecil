@@ -1,8 +1,18 @@
 <?php
-// Aktifkan error reporting
+// Aktifkan error reporting dan logging
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+// Tambahkan logging ke file
+function logError($message) {
+    $logFile = __DIR__ . '/error.log';
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
+}
+
+// Log awal request
+logError('Request started: ' . json_encode($_SERVER));
 
 // Kode yang sudah ada
 // Pastikan request method adalah POST
@@ -107,11 +117,16 @@ $response = curl_exec($ch);
 $error = curl_error($ch);
 curl_close($ch);
 
+// Dalam blok error handling, tambahkan logging
 if ($error) {
+    logError('cURL Error: ' . $error);
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Failed to create payment: ' . $error]);
     exit;
 }
+
+// Log respons dari Flip
+logError('Flip Response: ' . $response);
 
 $flipResponse = json_decode($response, true);
 
