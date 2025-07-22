@@ -197,7 +197,7 @@ const handleChoosePackage = (packageName) => {
       const selectedPackage = packages.find(p => p.id === formData.package);
       
       // Kirim data ke backend PHP
-      const response = await fetch('/api/index.php?path=payment/create', {
+      const response = await fetch('https://asahsikecil.com/api/index.php?path=payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
