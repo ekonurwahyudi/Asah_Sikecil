@@ -1303,9 +1303,9 @@ const handleChoosePackage = (packageName) => {
             <div>
               <h3 className="font-semibold mb-4">Kontak</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>WhatsApp: +62 812-3456-7890</li>
-                <li>Email: info@printablekidsword.com</li>
-                <li>Instagram: @printablekidsword</li>
+                <li>WhatsApp: +62 812-6136-4480</li>
+                <li>Email: asahsikecil@gmail.com</li>
+                <li>Instagram: @asahsikecil</li>
               </ul>
             </div>
           </div>
