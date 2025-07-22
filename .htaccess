@@ -1,0 +1,13 @@
+# Aktifkan modul rewrite
+RewriteEngine On
+
+# Jika request ke file atau direktori yang ada, gunakan file tersebut
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Jika request ke /api, arahkan ke api/index.php
+RewriteRule ^api/(.*)$ api/index.php?path=$1 [QSA,L]
+
+# Untuk semua request lainnya, arahkan ke index.html
+RewriteRule ^ index.html [L]

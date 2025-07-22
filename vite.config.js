@@ -11,4 +11,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Hapus konfigurasi server untuk production build
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'http://localhost:80',
+  //       changeOrigin: true,
+  //       secure: false,
+  //     }
+  //   }
+  // }
 })

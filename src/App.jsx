@@ -195,117 +195,34 @@ const handleChoosePackage = (packageName) => {
     try {
       // Dapatkan harga berdasarkan paket yang dipilih
       const selectedPackage = packages.find(p => p.id === formData.package);
-      const harga = selectedPackage ? selectedPackage.price : "0";
       
-      // Generate invoice number
-      const invoiceNumber = `INV-${Date.now()}`;
-
-      // Jika paket free, langsung simpan ke Google Sheets
-      if (selectedPackage.price === "0") {
-        // Format nomor telepon dengan menambahkan 62
-        const formattedPhone = formData.phone.startsWith('0') 
-          ? '62' + formData.phone.substring(1) 
-          : formData.phone.startsWith('62') 
-            ? formData.phone 
-            : '62' + formData.phone;
-
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec', {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            phone: formattedPhone,
-            email: formData.email,
-            package: formData.package,
-            idinvoice: '',
-            invoice: invoiceNumber,
-            harga: harga,
-            status: "SUKSES"
-          })
-        });
-
-        // Tambahkan delay untuk memastikan data terkirim
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setShowSuccessModal(true); // Tampilkan modal sukses
-        return;
-      }
-
-      // Untuk paket berbayar, lanjutkan dengan Xendit
-      const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
+      // Kirim data ke backend PHP
+      const response = await fetch('/api/index.php?path=payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + btoa('xnd_development_MpbO8bNvQMywUflJVRZw8KuaG7yqXGFnmvY4g4F6ZQqHeoscILqne9a4kbzuZUa:')
         },
         body: JSON.stringify({
-          external_id: invoiceNumber,
-          amount: parseInt(harga.replace(',', '')),
-          payer_email: formData.email,
-          description: `Pembelian ${formData.package}`,
-          invoice_duration: 86400,
-          customer: {
-            given_names: formData.name,
-            email: formData.email,
-            mobile_number: formData.phone
-          },
-          customer_notification_preference: {
-            invoice_created: ['email'],
-            invoice_reminder: ['whatsapp', 'email'], 
-            invoice_paid: ['email'],
-            invoice_expired: ['whatsapp', 'email']
-          },
-          success_redirect_url: `${window.location.origin}?status=success`,
-          failure_redirect_url: `${window.location.origin}/failed`
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          package: formData.package
         })
       });
 
-      const xenditData = await xenditResponse.json();
+      const responseData = await response.json();
       
-      if (xenditData.invoice_url) {
-        // Format nomor telepon dengan menambahkan 62
-        const formattedPhone = formData.phone.startsWith('0') 
-          ? '62' + formData.phone.substring(1) 
-          : formData.phone.startsWith('62') 
-            ? formData.phone 
-            : '62' + formData.phone;
-
-        // Kirim data ke Google Sheets dengan invoice number
-        const sheetsResponse = await fetch('https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec', {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            phone: formattedPhone,
-            email: formData.email,
-            package: formData.package,
-            idinvoice: xenditData.id,
-            invoice: invoiceNumber,
-            harga: harga,
-            status: "PENDING",
-            invoice_url: xenditData.invoice_url
-          })
-        });
-
-        try {
-          const responseData = await sheetsResponse.text();
-          console.log('Response dari Google Sheets:', responseData);
-        } catch (error) {
-          console.error('Error saat menyimpan ke Google Sheets:', error);
+      if (responseData.status === 'success') {
+        // Jika paket free atau pembayaran berhasil dibuat
+        if (responseData.payment_url) {
+          // Redirect ke halaman pembayaran Flip
+          window.location.href = responseData.payment_url;
+        } else {
+          // Untuk paket free, tampilkan modal sukses
+          setShowSuccessModal(true);
         }
-
-        // Tambahkan delay sebelum redirect untuk memastikan data terkirim
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Redirect ke halaman pembayaran Xendit
-        window.location.href = xenditData.invoice_url;
+      } else {
+        alert('Terjadi kesalahan: ' + responseData.message);
       }
     } catch (error) {
       console.error('Error details:', error);
@@ -1350,7 +1267,7 @@ const handleChoosePackage = (packageName) => {
       </section>
 
       {/* Footer */}
-      {/* <footer className="bg-gray-800 text-white py-12">
+      <footer className="bg-gray-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
@@ -1397,7 +1314,7 @@ const handleChoosePackage = (packageName) => {
             <p>&copy; 2024 Asah Sikecil. All rights reserved.</p>
           </div>
         </div>
-      </footer> */}
+      </footer>
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
   <DialogContent className="sm:max-w-[425px] bg-white rounded-lg p-6">
     <div className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
