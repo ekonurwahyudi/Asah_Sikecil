@@ -94,6 +94,7 @@ $duitkuData = [
     'customerVaName' => $data['name'],
     'email' => $data['email'],
     'phoneNumber' => $formattedPhone,
+    'paymentMethod' => 'QR', // Tambahkan ini untuk QRIS
     'itemDetails' => [
         [
             'name' => 'Pembelian ' . $data['package'],
