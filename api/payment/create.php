@@ -35,13 +35,13 @@ if (!isset($data['name']) || !isset($data['phone']) || !isset($data['email']) ||
 // Dapatkan harga berdasarkan paket
 $price = 0;
 switch ($data['package']) {
-    case 'premium':
+    case 'paket_premium':
         $price = 47500; // Diubah dari 49000
         break;
-    case 'lengkap':
+    case 'paket_lengkap':
         $price = 36300; // Diubah dari 99000
         break;
-    case 'free':
+    case 'paket_free':
     default:
         $price = 0;
         break;
@@ -89,7 +89,6 @@ $signature = md5($merchantCode . $invoiceNumber . $price . $apiKey);
 $duitkuData = [
     'merchantCode' => $merchantCode,
     'paymentAmount' => $price,
-    'paymentMethod' => 'VC', // Virtual Account (bisa diganti sesuai kebutuhan)
     'merchantOrderId' => $invoiceNumber,
     'productDetails' => 'Pembelian ' . $data['package'],
     'customerVaName' => $data['name'],

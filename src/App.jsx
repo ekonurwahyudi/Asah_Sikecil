@@ -22,7 +22,7 @@ function App() {
     name: "",
     phone: "",
     email: "",
-    package: "free",
+    package: "paket_free",
     idinvoice: "",
     invoice: "", // Akan diisi dari Xendit
     harga: "",   // Akan diambil dari total harga
@@ -124,16 +124,16 @@ const handleChoosePackage = (packageName) => {
   let packageId;
   switch(packageName) {
     case "Paket Free":
-      packageId = "free";
+      packageId = "paket_free";
       break;
     case "Paket Premium":
-      packageId = "premium";
+      packageId = "paket_premium";
       break;
     case "Paket Lengkap":
-      packageId = "lengkap";
+      packageId = "paket_lengkap";
       break;
     default:
-      packageId = "free";
+      packageId = "paket_free";
   }
   
   // Set paket yang dipilih
@@ -295,19 +295,19 @@ const handleChoosePackage = (packageName) => {
   ];
   const packages = [
     {
-      id: "free",
+      id: "paket_free",
       name: "Paket Free",
       price: "0",
       originalPrice: "0"
     },
     {
-      id: "lengkap",
+      id: "paket_lengkap",
       name: "Paket Lengkap",
       price: "36,300",
       originalPrice: "120,000"
     },
     {
-      id: "premium",
+      id: "paket_premium",
       name: "Paket Premium",
       price: "47,500",
       originalPrice: "250,000"
