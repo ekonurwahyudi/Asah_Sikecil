@@ -75,8 +75,8 @@ if ($price === 0) {
 }
 
 // Untuk paket berbayar, gunakan Duitku Payment Gateway
-$merchantCode = 'DS24031'; // Kode merchant dari Duitku
-$apiKey = '55b6a2c950325e2e2d181f2b9b2204aa'; // API key dari Duitku
+$merchantCode = 'DS24083'; // Kode merchant dari Duitku
+$apiKey = '321bd9c8c95ae5e5f9cf056c61321eff'; // API key dari Duitku
 
 // Format nomor telepon
 $formattedPhone = formatPhoneNumber($data['phone']);
