@@ -110,7 +110,7 @@ $duitkuData = [
 ];
 
 // Kirim request ke Duitku
-$ch = curl_init('https://sandbox.duitku.com/webapi/api/merchant/v2/inquiry');
+$ch = curl_init('https://api-sandbox.duitku.com/api/merchant/createInvoice');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_POST, 1);
