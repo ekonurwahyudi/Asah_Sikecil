@@ -36,10 +36,10 @@ if (!isset($data['name']) || !isset($data['phone']) || !isset($data['email']) ||
 $price = 0;
 switch ($data['package']) {
     case 'premium':
-        $price = 49000;
+        $price = 47500; // Diubah dari 49000
         break;
     case 'lengkap':
-        $price = 99000;
+        $price = 36300; // Diubah dari 99000
         break;
     case 'free':
     default:
