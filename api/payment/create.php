@@ -110,7 +110,7 @@ $duitkuData = [
 ];
 
 // Kirim request ke Duitku
-$ch = curl_init('https://api-sandbox.duitku.com/api/merchant/createInvoice');
+$ch = curl_init('https://sandbox.duitku.com/webapi/api/merchant/createInvoice');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_POST, 1);
@@ -137,7 +137,7 @@ logError('Duitku Response: ' . $response);
 
 $duitkuResponse = json_decode($response, true);
 
-if (isset($duitkuResponse['paymentUrl'])) {
+if (isset($duitkuResponse['paymentUrl']) && isset($duitkuResponse['reference'])) {
     // Data untuk Google Sheets
     $sheetsData = [
         'name' => $data['name'],
