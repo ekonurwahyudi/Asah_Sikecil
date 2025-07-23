@@ -163,3 +163,8 @@
 .zoom-dialog-content {
   animation: zoomIn 0.3s ease-out;
 }
+
+/* Menambahkan cursor pointer ke semua elemen yang dapat diklik */
+a, button, [role="button"], [onClick], .btn, input[type="submit"], input[type="button"], input[type="reset"] {
+  cursor: pointer !important;
+}

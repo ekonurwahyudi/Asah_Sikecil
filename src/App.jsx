@@ -215,7 +215,7 @@ const handleChoosePackage = (packageName) => {
       if (responseData.status === 'success') {
         // Jika paket free atau pembayaran berhasil dibuat
         if (responseData.payment_url) {
-          // Redirect ke halaman pembayaran Flip
+          // Redirect ke halaman pembayaran Duitku
           window.location.href = responseData.payment_url;
         } else {
           // Untuk paket free, tampilkan modal sukses
@@ -1265,9 +1265,45 @@ const handleChoosePackage = (packageName) => {
           </Accordion>
         </div>
       </section>
+      <section id="contact" className="py-5 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-35">
+        {/* Banner Promosi Calista AI */}
+             <div className="bg-white rounded-xl shadow-xl overflow-hidden mx-auto border border-blue-100 relative">
+              <div className="flex flex-col md:flex-row items-center relative">
+                <div className="md:w-2/5  flex justify-center items-center p-2 relative overflow-hidden">
+                  <div className="absolute -left-10 -top-10 w-40 h-40 bg-blue-100 rounded-full opacity-30"></div>
+                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-pink-100 rounded-full opacity-30"></div>
+                  <img 
+                    src="/cs.png" 
+                    alt="Customer Support Asah Sikecil" 
+                    className="w-auto h-auto max-h-[170px] object-contain relative z-10"
+                  />
+                </div>
+                <div className="md:w-3/5 p-6 text-left relative">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    Ada kendala dalam proses pemesanan?
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w">
+                    Jangan ragu untuk hubungi kami, kami siap membantu 😊.
+                  </p>
+                  <div className="flex justify-end">  {/* Tambahkan div dengan flex dan justify-end */}
+                    <Button 
+                      asChild
+                      className="inline-block bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3 w-[200px] text-lg cursor-pointer"
+                    >
+                      <a href="https://api.whatsapp.com/send?phone=628121555423&text=Hai%2C%20saya%20...........%20Mau%20tanya%20terkait%20Asah%20Sikecil.%20Terima%20kasih%20%F0%9F%99%8F." target='_blank'>
+                        Hubungi Kami <ArrowRight className="h-10 w-10" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
+      {/* <footer className="bg-gray-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
@@ -1314,7 +1350,7 @@ const handleChoosePackage = (packageName) => {
             <p>&copy; 2024 Asah Sikecil. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+      </footer> */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
   <DialogContent className="sm:max-w-[425px] bg-white rounded-lg p-6">
     <div className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
