@@ -94,7 +94,8 @@ $duitkuData = [
     'customerVaName' => $data['name'],
     'email' => $data['email'],
     'phoneNumber' => $formattedPhone,
-    'paymentMethod' => 'SP', // Tambahkan ini untuk QRIS
+    // Hapus baris berikut jika ingin pelanggan memilih metode pembayaran
+    // 'paymentMethod' => 'SP', // Tambahkan ini untuk QRIS
     'itemDetails' => [
         [
             'name' => 'Pembelian ' . $data['package'],

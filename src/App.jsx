@@ -214,31 +214,9 @@ const handleChoosePackage = (packageName) => {
       
       if (responseData.status === 'success') {
         // Jika paket free atau pembayaran berhasil dibuat
-        if (responseData.payment_url && responseData.reference) {
-          // Gunakan Duitku POP alih-alih redirect langsung
-          if (window.checkout) {
-            window.checkout.process(responseData.reference, {
-              successEvent: function(result) {
-                console.log('success', result);
-                setShowSuccessModal(true);
-              },
-              pendingEvent: function(result) {
-                console.log('pending', result);
-                alert('Pembayaran dalam proses. Silakan cek status pembayaran Anda.');
-              },
-              errorEvent: function(result) {
-                console.log('error', result);
-                alert('Terjadi kesalahan dalam proses pembayaran.');
-              },
-              closeEvent: function(result) {
-                console.log('customer closed the popup', result);
-                setIsLoading(false);
-              }
-            });
-          } else {
-            // Fallback jika script Duitku tidak dimuat dengan benar
-            window.location.href = responseData.payment_url;
-          }
+        if (responseData.payment_url) {
+          // Redirect ke halaman pembayaran Duitku
+          window.location.href = responseData.payment_url;
         } else {
           // Untuk paket free, tampilkan modal sukses
           setShowSuccessModal(true);
@@ -254,8 +232,7 @@ const handleChoosePackage = (packageName) => {
         alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
       }
     } finally {
-      // setIsLoading(false); - Jangan set loading false di sini karena akan diatur oleh closeEvent
-      // atau jika terjadi error
+      setIsLoading(false);
     }
   };
   const testimonials = [
