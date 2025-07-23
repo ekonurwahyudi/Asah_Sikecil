@@ -109,6 +109,10 @@ $duitkuData = [
     'signature' => $signature
 ];
 
+// Generate signature untuk header (berbeda dengan signature untuk body)
+$timestamp = round(microtime(true) * 1000); // Timestamp dalam milidetik
+$headerSignature = hash('sha256', $merchantCode . $timestamp . $apiKey);
+
 // Kirim request ke Duitku
 $ch = curl_init('https://api-sandbox.duitku.com/api/merchant/createInvoice');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -117,7 +121,10 @@ curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($duitkuData));
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
-    'Accept: application/json'
+    'Accept: application/json',
+    'x-duitku-signature: ' . $headerSignature,
+    'x-duitku-timestamp: ' . $timestamp,
+    'x-duitku-merchantcode: ' . $merchantCode
 ]);
 
 $response = curl_exec($ch);
