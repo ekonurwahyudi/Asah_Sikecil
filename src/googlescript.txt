@@ -92,41 +92,48 @@ function doPost(e) {
             newStatus: paymentStatus
           });
           
-          var response = ContentService.createTextOutput(JSON.stringify({ 
-      status: "success", 
-      message: "Payment status updated successfully" 
-    })).setMimeType(ContentService.MimeType.JSON);
-    
-    // Tambahkan header CORS ke respons
-    response.setHeaders({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Origin'
-    });
-    
-    return response; 
+          return ContentService.createTextOutput(JSON.stringify({ 
+            status: "success", 
+            message: "Payment status updated successfully" 
+          })).setMimeType(ContentService.MimeType.JSON); 
         } 
       } 
+      
+      // Jika merchantOrderId tidak ditemukan, coba cari dengan reference
+      if (data.reference) {
+        for (var i = 0; i < values.length; i++) { 
+          // Kolom 7 adalah reference (reference dari Duitku) 
+          if (values[i][6] === data.reference) { 
+            // Update status di kolom 9 (kolom I) 
+            sheet.getRange(i + 2, 9).setValue(paymentStatus); 
+            
+            // Log bahwa update berhasil dengan reference
+            logToSheet({
+              action: "update_success_by_reference",
+              reference: data.reference,
+              row: i + 2,
+              newStatus: paymentStatus
+            });
+            
+            return ContentService.createTextOutput(JSON.stringify({ 
+              status: "success", 
+              message: "Payment status updated successfully by reference" 
+            })).setMimeType(ContentService.MimeType.JSON); 
+          } 
+        }
+      }
       
       // Log bahwa invoice tidak ditemukan
       logToSheet({
         action: "invoice_not_found",
-        merchantOrderId: data.merchantOrderId
+        merchantOrderId: data.merchantOrderId,
+        reference: data.reference
       });
       
-      var response = ContentService.createTextOutput(JSON.stringify({ 
+      return ContentService.createTextOutput(JSON.stringify({ 
         status: "error", 
         message: "Invoice not found" 
-      })).setMimeType(ContentService.MimeType.JSON);
-      
-      // Tambahkan header CORS ke respons
-      response.setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Origin'
-      });
-      
-      return response; 
+      })).setMimeType(ContentService.MimeType.JSON); 
     } 
     
     // Jika ada update_status, ini adalah webhook dari Midtrans (untuk kompatibilitas mundur)
@@ -157,19 +164,10 @@ function doPost(e) {
             newStatus: data.status
           });
           
-          var response = ContentService.createTextOutput(JSON.stringify({ 
+          return ContentService.createTextOutput(JSON.stringify({ 
             status: "success", 
             message: "Payment status updated successfully" 
-          })).setMimeType(ContentService.MimeType.JSON);
-          
-          // Tambahkan header CORS ke respons
-          response.setHeaders({
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Origin'
-          });
-          
-          return response; 
+          })).setMimeType(ContentService.MimeType.JSON); 
         } 
       } 
       
@@ -179,19 +177,10 @@ function doPost(e) {
         invoice: data.invoice
       });
       
-      var response = ContentService.createTextOutput(JSON.stringify({ 
+      return ContentService.createTextOutput(JSON.stringify({ 
         status: "error", 
         message: "Invoice not found" 
-      })).setMimeType(ContentService.MimeType.JSON);
-      
-      // Tambahkan header CORS ke respons
-      response.setHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Origin'
-      });
-      
-      return response; 
+      })).setMimeType(ContentService.MimeType.JSON); 
     } 
     
     // Jika tidak ada resultCode atau update_status, ini adalah data baru dari form 
@@ -221,19 +210,10 @@ function doPost(e) {
       status: data.status
     });
     
-    var response = ContentService.createTextOutput(JSON.stringify({ 
+    return ContentService.createTextOutput(JSON.stringify({ 
       status: "success", 
       message: "Data saved successfully" 
-    })).setMimeType(ContentService.MimeType.JSON);
-    
-    // Tambahkan header CORS ke respons
-    response.setHeaders({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Origin'
-    });
-    
-    return response; 
+    })).setMimeType(ContentService.MimeType.JSON); 
     
   } catch (error) { 
     // Log error
@@ -243,18 +223,9 @@ function doPost(e) {
       data: e.postData ? e.postData.contents : "No data"
     });
     
-    var response = ContentService.createTextOutput(JSON.stringify({ 
+    return ContentService.createTextOutput(JSON.stringify({ 
       status: "error", 
       message: error.toString() 
-    })).setMimeType(ContentService.MimeType.JSON);
-    
-    // Tambahkan header CORS ke respons
-    response.setHeaders({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Origin'
-    });
-    
-    return response; 
+    })).setMimeType(ContentService.MimeType.JSON); 
   } 
 }

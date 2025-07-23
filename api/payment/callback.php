@@ -40,7 +40,7 @@ $sheetsData = [
 ];
 
 // Kirim data ke Google Sheets
-$scriptURL = 'https://script.google.com/macros/s/AKfycbyZ-UO3ns123R7ruN2RMJ2knepoaNnILgUoby0-4yOVO3f_tjOiWFSF8XoGTRk2oYO3/exec';
+$scriptURL = 'https://script.google.com/macros/s/AKfycbxZSO2MMkdJ-JA1uY1RQE7OEZDMESH1BT1xg5m7bzCWU2DHqoj-vassYlnkRkbnXV4T/exec';
 
 $ch = curl_init($scriptURL);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
