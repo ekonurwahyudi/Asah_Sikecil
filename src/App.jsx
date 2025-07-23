@@ -1307,7 +1307,10 @@ const handleChoosePackage = (packageName) => {
                     Ada kendala dalam proses pemesanan?
                   </h3>
                   <p className="text-gray-600 mb-6 max-w">
-                    Jangan ragu untuk hubungi kami, kami siap membantu 😊.
+                    Jangan ragu untuk hubungi kami, kami siap membantu 😊. <br />
+                    Alamat : Jl. Taman Induk RT.08 RW.011 No. B9 Cipayung Depok <br />
+                    Email : asahsikecil@gmail.com <br />
+                    Wa : 08121555423
                   </p>
                   <div className="flex justify-end">  {/* Tambahkan div dengan flex dan justify-end */}
                     <Button 
