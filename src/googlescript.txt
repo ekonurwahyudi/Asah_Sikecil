@@ -56,7 +56,7 @@ function doPost(e) {
       // Konversi status code Duitku ke status yang lebih deskriptif
       var paymentStatus = "UNKNOWN";
       if (data.resultCode === "00") {
-        paymentStatus = "SUCCESS";
+        paymentStatus = "SUKSES";
       } else if (data.resultCode === "01") {
         paymentStatus = "FAILED";
       } else if (data.resultCode === "02") {
@@ -76,7 +76,7 @@ function doPost(e) {
       
       for (var i = 0; i < values.length; i++) { 
         // Kolom 6 adalah invoice (merchantOrderId dari Duitku) 
-        if (values[i][5] === data.merchantOrderId) { 
+        if (values[i][6] === data.merchantOrderId) { 
           // Update status di kolom 9 (kolom I) 
           sheet.getRange(i + 2, 9).setValue(paymentStatus); 
           // Update reference di kolom 7 (kolom G) jika ada
@@ -103,7 +103,7 @@ function doPost(e) {
       if (data.reference) {
         for (var i = 0; i < values.length; i++) { 
           // Kolom 7 adalah reference (reference dari Duitku) 
-          if (values[i][6] === data.reference) { 
+          if (values[i][7] === data.reference) { 
             // Update status di kolom 9 (kolom I) 
             sheet.getRange(i + 2, 9).setValue(paymentStatus); 
             
@@ -136,54 +136,7 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON); 
     } 
     
-    // Jika ada update_status, ini adalah webhook dari Midtrans (untuk kompatibilitas mundur)
-    else if (data.update_status) { 
-      // Cari baris dengan invoice number yang sesuai 
-      var dataRange = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()); 
-      var values = dataRange.getValues(); 
-      
-      // Log informasi dari callback Midtrans
-      logToSheet({
-        source: "midtrans",
-        update_status: data.update_status,
-        invoice: data.invoice,
-        status: data.status
-      });
-      
-      for (var i = 0; i < values.length; i++) { 
-        // Kolom 6 adalah invoice (order_id dari Midtrans) 
-        if (values[i][5] === data.invoice) { 
-          // Update status di kolom 9 (kolom I) 
-          sheet.getRange(i + 2, 9).setValue(data.status); 
-          
-          // Log bahwa update berhasil
-          logToSheet({
-            action: "midtrans_update_success",
-            invoice: data.invoice,
-            row: i + 2,
-            newStatus: data.status
-          });
-          
-          return ContentService.createTextOutput(JSON.stringify({ 
-            status: "success", 
-            message: "Payment status updated successfully" 
-          })).setMimeType(ContentService.MimeType.JSON); 
-        } 
-      } 
-      
-      // Log bahwa invoice tidak ditemukan
-      logToSheet({
-        action: "midtrans_invoice_not_found",
-        invoice: data.invoice
-      });
-      
-      return ContentService.createTextOutput(JSON.stringify({ 
-        status: "error", 
-        message: "Invoice not found" 
-      })).setMimeType(ContentService.MimeType.JSON); 
-    } 
-    
-    // Jika tidak ada resultCode atau update_status, ini adalah data baru dari form 
+    // Jika tidak ada resultCode, ini adalah data baru dari form 
     // Log data form yang diterima
     logToSheet({
       action: "new_form_data",
@@ -197,7 +150,7 @@ function doPost(e) {
       data.email, 
       data.package, 
       data.invoice,    // Invoice number (merchantOrderId untuk Duitku) 
-      data.idinvoice,  // reference untuk Duitku / order_id untuk Midtrans 
+      data.idinvoice,  // reference untuk Duitku
       data.harga, 
       data.status, 
       data.invoice_url 
