@@ -186,7 +186,7 @@ function formatPhoneNumber($phone) {
 
 // Fungsi untuk menyimpan data ke Google Sheets
 function saveToGoogleSheets($data) {
-    $scriptURL = 'https://script.google.com/macros/s/AKfycbxhAqaD673cCeRQSnZ1gsGjOTUWPIwPBpP1pmFBIXKUMocT8ZDhpyuOqyRY5K_2iLX1/exec';
+    $scriptURL = 'https://script.google.com/macros/s/AKfycbxxVecQHTGArtR5cdi3xRyURneuhVL1NUFVQvbWI5BPYWwsO223d-ok-oVsEH1X95l7/exec';
     
     $ch = curl_init($scriptURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

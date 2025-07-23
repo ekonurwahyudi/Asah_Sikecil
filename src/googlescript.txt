@@ -1,40 +1,26 @@
 function doOptions(e) { 
-  var headers = { 
-    'Access-Control-Allow-Origin': '*', 
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS', 
-    'Access-Control-Allow-Headers': 'Content-Type, Origin' 
-  }; 
+  var output = ContentService.createTextOutput()
+    .setMimeType(ContentService.MimeType.JSON)
+    .setContent(JSON.stringify({ status: "success" }));
   
-  return ContentService.createTextOutput() 
-    .setMimeType(ContentService.MimeType.JSON) 
-    .setContent(JSON.stringify({ status: "success" })) 
-    .setHeaders(headers); 
+  // Tambahkan header satu per satu
+  output.addHeader('Access-Control-Allow-Origin', '*');
+  output.addHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  output.addHeader('Access-Control-Allow-Headers', 'Content-Type, Origin');
+  
+  return output;
 } 
-
-/**
- * Fungsi untuk mencatat log ke spreadsheet terpisah untuk debugging
- * @param {Object} data - Data yang akan dicatat
- */
-function logToSheet(data) {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var logSheet = ss.getSheetByName("Log");
-    
-    // Buat sheet log jika belum ada
-    if (!logSheet) {
-      logSheet = ss.insertSheet("Log");
-      logSheet.appendRow(["Timestamp", "Data"]);
-    }
-    
-    logSheet.appendRow([new Date(), JSON.stringify(data)]);
-  } catch (error) {
-    Logger.log("Error saat mencatat log: " + error.toString());
-  }
-}
-
 
 function doPost(e) { 
   try { 
+    // Periksa apakah e dan e.postData ada sebelum mengaksesnya
+    if (!e || !e.postData) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        status: "error", 
+        message: "No post data received" 
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
     // Parse data yang diterima 
     var data = JSON.parse(e.postData.contents); 
     
@@ -154,7 +140,7 @@ function doPost(e) {
       data.harga, 
       data.status, 
       data.invoice_url 
-    ]); 
+    ]);
     
     // Log bahwa data berhasil disimpan
     logToSheet({
@@ -166,9 +152,9 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({ 
       status: "success", 
       message: "Data saved successfully" 
-    })).setMimeType(ContentService.MimeType.JSON); 
+    })).setMimeType(ContentService.MimeType.JSON);
     
-  } catch (error) { 
+  } catch (error) {
     // Log error
     logToSheet({
       action: "error",
@@ -179,6 +165,6 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({ 
       status: "error", 
       message: error.toString() 
-    })).setMimeType(ContentService.MimeType.JSON); 
-  } 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
