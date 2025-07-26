@@ -9,6 +9,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog.jsx'
 function FreeOfferPage() {
   const navigate = useNavigate();
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [imageUrls, setImageUrls] = useState([null, null, null]); // State untuk menyimpan URL gambar
   const [formStep, setFormStep] = useState(1); // 1: upload gambar, 2: input data
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Tambahkan state untuk loading
@@ -30,6 +31,16 @@ function FreeOfferPage() {
     img.src = '/banner_calista.png';
   }, []);
 
+  // Tambahkan useEffect untuk membersihkan URL objek saat komponen unmount
+  useEffect(() => {
+    // Cleanup function untuk merevoke URL objek
+    return () => {
+      imageUrls.forEach(url => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [imageUrls]);
+
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       // Mengambil file yang dipilih (maksimal 3)
@@ -40,12 +51,50 @@ function FreeOfferPage() {
       
       // Jika slot yang tersisa cukup untuk semua file baru
       if (remainingSlots >= newFiles.length) {
-        setUploadedImages([...uploadedImages, ...newFiles]);
+        // Buat salinan array uploadedImages dan imageUrls
+        const newUploadedImages = [...uploadedImages];
+        const newImageUrls = [...imageUrls];
+        
+        // Tambahkan file baru dan buat URL untuk masing-masing
+        newFiles.forEach((file, index) => {
+          const position = uploadedImages.length + index;
+          if (position < 3) {
+            // Revoke URL lama jika ada
+            if (newImageUrls[position]) URL.revokeObjectURL(newImageUrls[position]);
+            
+            // Buat URL baru
+            newUploadedImages[position] = file;
+            newImageUrls[position] = URL.createObjectURL(file);
+          }
+        });
+        
+        setUploadedImages(newUploadedImages);
+        setImageUrls(newImageUrls);
       } 
       // Jika slot yang tersisa tidak cukup, ambil sebanyak yang bisa ditampung
       else if (remainingSlots > 0) {
         const filesToAdd = newFiles.slice(0, remainingSlots);
-        setUploadedImages([...uploadedImages, ...filesToAdd]);
+        
+        // Buat salinan array uploadedImages dan imageUrls
+        const newUploadedImages = [...uploadedImages];
+        const newImageUrls = [...imageUrls];
+        
+        // Tambahkan file baru dan buat URL untuk masing-masing
+        filesToAdd.forEach((file, index) => {
+          const position = uploadedImages.length + index;
+          if (position < 3) {
+            // Revoke URL lama jika ada
+            if (newImageUrls[position]) URL.revokeObjectURL(newImageUrls[position]);
+            
+            // Buat URL baru
+            newUploadedImages[position] = file;
+            newImageUrls[position] = URL.createObjectURL(file);
+          }
+        });
+        
+        setUploadedImages(newUploadedImages);
+        setImageUrls(newImageUrls);
+        
         alert(`Hanya ${remainingSlots} gambar yang ditambahkan. Maksimal 3 gambar yang dapat diupload.`);
       } 
       // Jika tidak ada slot tersisa
@@ -57,9 +106,23 @@ function FreeOfferPage() {
   };
 
   const handleRemoveImage = (index) => {
-    const newImages = [...uploadedImages];
-    newImages.splice(index, 1);
-    setUploadedImages(newImages);
+    // Buat salinan array uploadedImages dan imageUrls
+    const newUploadedImages = [...uploadedImages];
+    const newImageUrls = [...imageUrls];
+    
+    // Revoke URL objek sebelum menghapus
+    if (newImageUrls[index]) {
+      URL.revokeObjectURL(newImageUrls[index]);
+      newImageUrls[index] = null;
+    }
+    
+    // Hapus file dari array
+    newUploadedImages.splice(index, 1);
+    newImageUrls.splice(index, 1);
+    newImageUrls.push(null); // Tambahkan null di akhir untuk menjaga panjang array tetap 3
+    
+    setUploadedImages(newUploadedImages);
+    setImageUrls(newImageUrls);
   };
 
   const handleCopyCaption = () => {
@@ -205,10 +268,10 @@ function FreeOfferPage() {
                     key={index} 
                     className={`aspect-square border-2 ${uploadedImages[index] ? 'border-green-500' : 'border-dashed border-gray-300'} rounded-lg flex items-center justify-center relative overflow-hidden`}
                   >
-                    {uploadedImages[index] ? (
+                    {uploadedImages[index] && imageUrls[index] ? (
                       <>
                         <img 
-                          src={URL.createObjectURL(uploadedImages[index])} 
+                          src={imageUrls[index]} 
                           alt={`Upload ${index + 1}`} 
                           className="w-full h-full object-cover"
                         />
