@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Tambahkan meta tag CSP berikut -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app-sandbox.duitku.com https://static.cloudflareinsights.com https://app-prod.duitku.com; connect-src 'self' https://*.duitku.com https://static.cloudflareinsights.com; frame-src 'self' https://*.duitku.com; img-src 'self' data: https://*.duitku.com;" />
-    
+    <!-- ...existing meta tags ... -->
+    <!-- Content Security Policy untuk Midtrans -->
+
     <title>Asah Sikecil - Worksheet Anak TK & PAUD | Lembar Kerja Printable Belajar CALISTUNG</title>
     <meta name="description" content="Koleksi 12.000+ worksheet printable berbahasa Indonesia untuk mengembangkan kemampuan menulis, membaca, dan berhitung (CALISTUNG) anak usia 2-9 tahun. Download lembar kerja anak TK dan PAUD untuk stimulasi motorik halus." />
     <meta name="keywords" content="worksheet anak, lembar kerja anak TK, lembar kerja anak, belajar menulis anak, belajar CALISTUNG, belajar berhitung anak, mencocokkan gambar anak, alfabet untuk anak, aktivitas anak prasekolah, ide bermain anak 3 tahun, cara mengajar anak membaca, stimulasi motorik halus, download worksheet anak TK, printable alfabet, jual worksheet berhitung, lembar kerja PAUD pdf, worksheet mencocokkan gambar binatang, latihan menulis huruf hijaiyah anak, printable gratis tema kendaraan" />
@@ -27,9 +27,9 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://asahsikecil.com/" />
-    
-    <!-- Duitku JS - Gunakan sandbox untuk pengujian, ganti dengan production saat siap -->
-    <script src="https://app-sandbox.duitku.com/lib/js/duitku.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com; connect-src 'self' https://app.sandbox.midtrans.com https://asahsikecil.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://app.sandbox.midtrans.com;" />
+    <!-- Midtrans Snap JS - Sandbox -->
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-Tg3EWP-wjBlTYscF"></script>
   </head>
   <body>
     <div id="root"></div>

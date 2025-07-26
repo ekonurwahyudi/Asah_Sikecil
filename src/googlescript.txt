@@ -33,47 +33,48 @@ function doPost(e) {
     Logger.log('Data yang diterima: ' + JSON.stringify(data));
     logToSheet(data);
     
-    // Jika ada resultCode, ini adalah callback dari Duitku 
-    if (data.resultCode !== undefined) { 
+    // Jika ada transaction_status, ini adalah callback dari Midtrans 
+    if (data.transaction_status !== undefined) { 
       // Cari baris dengan invoice number yang sesuai 
       var dataRange = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()); 
       var values = dataRange.getValues(); 
       
-      // Konversi status code Duitku ke status yang lebih deskriptif
+      // Konversi status Midtrans ke status yang lebih deskriptif
       var paymentStatus = "UNKNOWN";
-      if (data.resultCode === "00") {
+      if (data.transaction_status === "capture" || data.transaction_status === "settlement") {
         paymentStatus = "SUKSES";
-      } else if (data.resultCode === "01") {
-        paymentStatus = "FAILED";
-      } else if (data.resultCode === "02") {
+      } else if (data.transaction_status === "pending") {
         paymentStatus = "PENDING";
+      } else if (data.transaction_status === "deny" || data.transaction_status === "cancel" || 
+                 data.transaction_status === "expire" || data.transaction_status === "failure") {
+        paymentStatus = "FAILED";
       }
       
-      // Log informasi penting dari callback Duitku
+      // Log informasi penting dari callback Midtrans
       var logData = {
-        merchantCode: data.merchantCode,
-        merchantOrderId: data.merchantOrderId,
-        reference: data.reference,
-        resultCode: data.resultCode,
-        amount: data.amount,
+        order_id: data.order_id,
+        transaction_id: data.transaction_id,
+        transaction_status: data.transaction_status,
+        gross_amount: data.gross_amount,
+        payment_type: data.payment_type,
         paymentStatus: paymentStatus
       };
       logToSheet(logData);
       
       for (var i = 0; i < values.length; i++) { 
-        // Kolom 6 adalah invoice (merchantOrderId dari Duitku) 
-        if (values[i][6] === data.merchantOrderId) { 
+        // Kolom 6 adalah invoice (order_id dari Midtrans) 
+        if (values[i][6] === data.order_id) { 
           // Update status di kolom 9 (kolom I) 
           sheet.getRange(i + 2, 9).setValue(paymentStatus); 
-          // Update reference di kolom 7 (kolom G) jika ada
-          if (data.reference) {
-            sheet.getRange(i + 2, 7).setValue(data.reference);
+          // Update transaction_id di kolom 7 (kolom G) jika ada
+          if (data.transaction_id) {
+            sheet.getRange(i + 2, 7).setValue(data.transaction_id);
           }
           
           // Log bahwa update berhasil
           logToSheet({
             action: "update_success",
-            merchantOrderId: data.merchantOrderId,
+            order_id: data.order_id,
             row: i + 2,
             newStatus: paymentStatus
           });
@@ -85,25 +86,25 @@ function doPost(e) {
         } 
       } 
       
-      // Jika merchantOrderId tidak ditemukan, coba cari dengan reference
-      if (data.reference) {
+      // Jika order_id tidak ditemukan, coba cari dengan transaction_id
+      if (data.transaction_id) {
         for (var i = 0; i < values.length; i++) { 
-          // Kolom 7 adalah reference (reference dari Duitku) 
-          if (values[i][7] === data.reference) { 
+          // Kolom 7 adalah transaction_id (transaction_id dari Midtrans) 
+          if (values[i][7] === data.transaction_id) { 
             // Update status di kolom 9 (kolom I) 
             sheet.getRange(i + 2, 9).setValue(paymentStatus); 
             
-            // Log bahwa update berhasil dengan reference
+            // Log bahwa update berhasil dengan transaction_id
             logToSheet({
-              action: "update_success_by_reference",
-              reference: data.reference,
+              action: "update_success_by_transaction_id",
+              transaction_id: data.transaction_id,
               row: i + 2,
               newStatus: paymentStatus
             });
             
             return ContentService.createTextOutput(JSON.stringify({ 
               status: "success", 
-              message: "Payment status updated successfully by reference" 
+              message: "Payment status updated successfully by transaction_id" 
             })).setMimeType(ContentService.MimeType.JSON); 
           } 
         }
@@ -112,8 +113,8 @@ function doPost(e) {
       // Log bahwa invoice tidak ditemukan
       logToSheet({
         action: "invoice_not_found",
-        merchantOrderId: data.merchantOrderId,
-        reference: data.reference
+        order_id: data.order_id,
+        transaction_id: data.transaction_id
       });
       
       return ContentService.createTextOutput(JSON.stringify({ 
@@ -122,7 +123,7 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON); 
     } 
     
-    // Jika tidak ada resultCode, ini adalah data baru dari form 
+    // Jika tidak ada transaction_status, ini adalah data baru dari form 
     // Log data form yang diterima
     logToSheet({
       action: "new_form_data",
@@ -135,8 +136,8 @@ function doPost(e) {
       data.phone, 
       data.email, 
       data.package, 
-      data.invoice,    // Invoice number (merchantOrderId untuk Duitku) 
-      data.idinvoice,  // reference untuk Duitku
+      data.invoice,    // Invoice number (order_id untuk Midtrans) 
+      data.idinvoice,  // transaction_id untuk Midtrans
       data.harga, 
       data.status, 
       data.invoice_url 
@@ -166,5 +167,20 @@ function doPost(e) {
       status: "error", 
       message: error.toString() 
     })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Fungsi untuk logging ke sheet terpisah
+function logToSheet(data) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var logSheet = ss.getSheetByName('Log') || ss.insertSheet('Log');
+    
+    logSheet.appendRow([
+      new Date(),
+      JSON.stringify(data)
+    ]);
+  } catch (error) {
+    Logger.log('Error logging to sheet: ' + error.toString());
   }
 }

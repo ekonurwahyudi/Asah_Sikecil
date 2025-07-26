@@ -59,8 +59,8 @@ function App() {
       window.history.replaceState({}, '', window.location.pathname);
     }
     // Preload gambar sukses
-  const img = new Image();
-  img.src = '/payment_success.png';
+    const img = new Image();
+    img.src = '/payment_success.png';
   }, []);
 
   // Effect untuk mengatur popup pembeli
@@ -197,7 +197,7 @@ const handleChoosePackage = (packageName) => {
       const selectedPackage = packages.find(p => p.id === formData.package);
       
       // Kirim data ke backend PHP
-      const response = await fetch('https://asahsikecil.com/api/index.php?path=payment/create', {
+      const response = await fetch('/api/index.php?path=payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,37 +214,26 @@ const handleChoosePackage = (packageName) => {
       
       if (responseData.status === 'success') {
         // Jika paket free atau pembayaran berhasil dibuat
-        if (responseData.payment_url && responseData.reference) {
-          // Gunakan Duitku POP alih-alih redirect langsung
-          if (window.checkout) {
-            window.checkout.process(responseData.reference, {
-              successEvent: function(result) {
-                console.log('success', result);
-                setShowSuccessModal(true);
-              },
-              pendingEvent: function(result) {
-                console.log('pending', result);
-                alert('Pembayaran dalam proses. Silakan cek status pembayaran Anda.');
-              },
-              errorEvent: function(result) {
-                console.log('error', result);
-                alert('Terjadi kesalahan dalam proses pembayaran.');
-              },
-              closeEvent: function(result) {
-                console.log('customer closed the popup', result);
-                setIsLoading(false);
-              }
-            });
+        if (responseData.snap_token) {
+          // Langsung redirect ke halaman pembayaran Midtrans
+          if (responseData.redirect_url) {
+            window.location.href = responseData.redirect_url;
           } else {
-            // Fallback jika script Duitku tidak dimuat dengan benar
-            window.location.href = responseData.payment_url;
+            alert('Terjadi kesalahan: URL redirect tidak tersedia');
+            setIsLoading(false);
           }
-        } else {
-          // Untuk paket free, tampilkan modal sukses
+        } else if (responseData.message && responseData.message.includes('Free package')) {
+          // Hanya untuk paket free yang benar-benar sukses
           setShowSuccessModal(true);
+          setIsLoading(false);
+        } else {
+          // Error lainnya
+          alert('Terjadi kesalahan dalam membuat pembayaran.');
+          setIsLoading(false);
         }
       } else {
         alert('Terjadi kesalahan: ' + responseData.message);
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error details:', error);
@@ -253,9 +242,7 @@ const handleChoosePackage = (packageName) => {
       } else {
         alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
       }
-    } finally {
-      // setIsLoading(false); - Jangan set loading false di sini karena akan diatur oleh closeEvent
-      // atau jika terjadi error
+      setIsLoading(false);
     }
   };
   const testimonials = [
@@ -1307,10 +1294,7 @@ const handleChoosePackage = (packageName) => {
                     Ada kendala dalam proses pemesanan?
                   </h3>
                   <p className="text-gray-600 mb-6 max-w">
-                    Jangan ragu untuk hubungi kami, kami siap membantu 😊. <br />
-                    Alamat : Jl. Taman Induk RT.08 RW.011 No. B9 Cipayung Depok <br />
-                    Email : asahsikecil@gmail.com <br />
-                    Wa : 08121555423
+                    Jangan ragu untuk hubungi kami, kami siap membantu 😊.
                   </p>
                   <div className="flex justify-end">  {/* Tambahkan div dengan flex dan justify-end */}
                     <Button 

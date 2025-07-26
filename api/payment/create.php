@@ -14,7 +14,6 @@ function logError($message) {
 // Log awal request
 logError('Request started: ' . json_encode($_SERVER));
 
-// Kode yang sudah ada
 // Pastikan request method adalah POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -36,10 +35,10 @@ if (!isset($data['name']) || !isset($data['phone']) || !isset($data['email']) ||
 $price = 0;
 switch ($data['package']) {
     case 'paket_premium':
-        $price = 47500; // Diubah dari 49000
+        $price = 47500;
         break;
     case 'paket_lengkap':
-        $price = 36300; // Diubah dari 99000
+        $price = 36300;
         break;
     case 'paket_free':
     default:
@@ -74,64 +73,59 @@ if ($price === 0) {
     exit;
 }
 
-// Untuk paket berbayar, gunakan Duitku Payment Gateway
-$merchantCode = 'DS24083'; // Kode merchant dari Duitku
-$apiKey = '321bd9c8c95ae5e5f9cf056c61321eff'; // API key dari Duitku
+// Untuk paket berbayar, gunakan Midtrans Snap
+$merchantId = 'G204604748';
+$clientKey = 'SB-Mid-client-Tg3EWP-wjBlTYscF';
+$serverKey = 'SB-Mid-server-mavVN5HEMxI5scqfPoL8r0hA';
 
 // Format nomor telepon
 $formattedPhone = formatPhoneNumber($data['phone']);
 
-// Generate signature
-$datetime = date('Y-m-d H:i:s');
-$signature = md5($merchantCode . $invoiceNumber . $price . $apiKey);
-
-// Data untuk Duitku
-$duitkuData = [
-    'merchantCode' => $merchantCode,
-    'paymentAmount' => $price,
-    'merchantOrderId' => $invoiceNumber,
-    'productDetails' => 'Pembelian ' . $data['package'],
-    'customerVaName' => $data['name'],
-    'email' => $data['email'],
-    'phoneNumber' => $formattedPhone,
-    // Hapus baris berikut jika ingin pelanggan memilih metode pembayaran
-    // 'paymentMethod' => 'SP', // Tambahkan ini untuk QRIS
-    'itemDetails' => [
+// Data untuk Midtrans Snap
+$midtransData = [
+    'transaction_details' => [
+        'order_id' => $invoiceNumber,
+        'gross_amount' => $price
+    ],
+    'customer_details' => [
+        'first_name' => $data['name'],
+        'email' => $data['email'],
+        'phone' => $formattedPhone
+    ],
+    'item_details' => [
         [
-            'name' => 'Pembelian ' . $data['package'],
+            'id' => $data['package'],
             'price' => $price,
-            'quantity' => 1
+            'quantity' => 1,
+            'name' => 'Pembelian ' . $data['package']
         ]
     ],
-    'callbackUrl' => 'https://' . $_SERVER['HTTP_HOST'] . '/api/index.php?path=payment/callback',
-    'returnUrl' => 'https://' . $_SERVER['HTTP_HOST'] . '?status=success',
-    'expiryPeriod' => 1440, // dalam menit (24 jam)
-    'signature' => $signature
+    'callbacks' => [
+        'finish' => 'https://' . $_SERVER['HTTP_HOST'] . '?status=success'
+    ]
 ];
 
-// Generate signature untuk header (berbeda dengan signature untuk body)
-$timestamp = round(microtime(true) * 1000); // Timestamp dalam milidetik
-$headerSignature = hash('sha256', $merchantCode . $timestamp . $apiKey);
-
-// Kirim request ke Duitku
-$ch = curl_init('https://api-sandbox.duitku.com/api/merchant/createInvoice');
+// Kirim request ke Midtrans Snap
+$ch = curl_init('https://app.sandbox.midtrans.com/snap/v1/transactions');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($duitkuData));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($midtransData));
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'Accept: application/json',
-    'x-duitku-signature: ' . $headerSignature,
-    'x-duitku-timestamp: ' . $timestamp,
-    'x-duitku-merchantcode: ' . $merchantCode
+    'Authorization: Basic ' . base64_encode($serverKey . ':')
 ]);
 
 $response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $error = curl_error($ch);
 curl_close($ch);
 
-// Dalam blok error handling, tambahkan logging
+// Log HTTP status dan response
+logError('HTTP Status: ' . $httpCode);
+logError('Midtrans Response: ' . $response);
+
 if ($error) {
     logError('cURL Error: ' . $error);
     http_response_code(500);
@@ -139,23 +133,28 @@ if ($error) {
     exit;
 }
 
-// Log respons dari Duitku
-logError('Duitku Response: ' . $response);
+// Cek HTTP status code
+if ($httpCode !== 200 && $httpCode !== 201) {
+    logError('HTTP Error: Status code ' . $httpCode);
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Midtrans API returned HTTP ' . $httpCode, 'details' => $response]);
+    exit;
+}
 
-$duitkuResponse = json_decode($response, true);
+$midtransResponse = json_decode($response, true);
 
-if (isset($duitkuResponse['paymentUrl']) && isset($duitkuResponse['reference'])) {
+if (isset($midtransResponse['token']) && isset($midtransResponse['redirect_url'])) {
     // Data untuk Google Sheets
     $sheetsData = [
         'name' => $data['name'],
         'phone' => $formattedPhone,
         'email' => $data['email'],
         'package' => $data['package'],
-        'idinvoice' => $duitkuResponse['reference'], // Reference dari Duitku
+        'idinvoice' => $midtransResponse['token'], // Token dari Midtrans
         'invoice' => $invoiceNumber,
         'harga' => $price,
         'status' => 'PENDING',
-        'invoice_url' => $duitkuResponse['paymentUrl']
+        'invoice_url' => $midtransResponse['redirect_url']
     ];
     
     // Kirim data ke Google Sheets
@@ -163,12 +162,12 @@ if (isset($duitkuResponse['paymentUrl']) && isset($duitkuResponse['reference']))
     
     echo json_encode([
         'status' => 'success', 
-        'payment_url' => $duitkuResponse['paymentUrl'],
-        'reference' => $duitkuResponse['reference']
+        'snap_token' => $midtransResponse['token'],
+        'redirect_url' => $midtransResponse['redirect_url']
     ]);
 } else {
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Failed to create payment', 'details' => $duitkuResponse]);
+    echo json_encode(['status' => 'error', 'message' => 'Failed to create payment', 'details' => $midtransResponse]);
 }
 
 // Fungsi untuk format nomor telepon
@@ -186,7 +185,7 @@ function formatPhoneNumber($phone) {
 
 // Fungsi untuk menyimpan data ke Google Sheets
 function saveToGoogleSheets($data) {
-    $scriptURL = 'https://script.google.com/macros/s/AKfycbxxVecQHTGArtR5cdi3xRyURneuhVL1NUFVQvbWI5BPYWwsO223d-ok-oVsEH1X95l7/exec';
+    $scriptURL = 'https://script.google.com/macros/s/AKfycbzDuMd8m0EwZ4EbT1UJljWIBYYUhlxgowoz9Vv0GmhfDTfr5pgOhKyvTAiyM6ZX9tb9/exec';
     
     $ch = curl_init($scriptURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
