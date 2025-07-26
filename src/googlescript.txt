@@ -30,11 +30,10 @@ function doPost(e) {
     var lastRow = sheet.getLastRow(); 
     
     // Log data yang diterima untuk debugging
-    Logger.log('Data yang diterima: ' + JSON.stringify(data));
     logToSheet({
       action: "received_data",
       timestamp: new Date().toISOString(),
-      data: data
+      data: JSON.stringify(data)
     });
     
     // Jika ada transaction_status, ini adalah callback dari Midtrans 
@@ -64,20 +63,36 @@ function doPost(e) {
       
       var invoiceFound = false;
       
-      // Cari berdasarkan Id Invoice (kolom G)
+      // PERUBAHAN: Cari berdasarkan No_Invoice (kolom F) terlebih dahulu
+      // karena berdasarkan gambar, order_id dari Midtrans cocok dengan No_Invoice
       for (var i = 0; i < values.length; i++) { 
-        // Kolom 6 (indeks array) adalah Id Invoice (kolom G di spreadsheet)
-        if (values[i][6] === data.order_id) { 
+        // Kolom 5 (indeks array) adalah No_Invoice (kolom F di spreadsheet)
+        // Log untuk debugging
+        logToSheet({
+          action: "checking_row_column_f",
+          row_index: i,
+          row_no_invoice: values[i][5],
+          order_id: data.order_id,
+          match: values[i][5] === data.order_id
+        });
+        
+        if (values[i][5] === data.order_id) { 
           invoiceFound = true;
           
           // Update status di kolom 8 (indeks array) / kolom I di spreadsheet
           sheet.getRange(i + 2, 9).setValue(paymentStatus); 
           
+          // Jika ada transaction_id, update juga di kolom G
+          if (data.transaction_id) {
+            sheet.getRange(i + 2, 7).setValue(data.transaction_id);
+          }
+          
           logToSheet({
-            action: "update_success",
+            action: "update_success_column_f",
             order_id: data.order_id,
             row: i + 2,
-            new_status: paymentStatus
+            new_status: paymentStatus,
+            transaction_id: data.transaction_id || "not_provided"
           });
           
           return ContentService.createTextOutput(JSON.stringify({ 
@@ -85,22 +100,70 @@ function doPost(e) {
             message: "Payment status updated successfully" 
           })).setMimeType(ContentService.MimeType.JSON); 
         } 
-      } 
+      }
       
-      // Jika tidak ditemukan dengan order_id, coba cari dengan case-insensitive
+      // Jika tidak ditemukan di kolom F, coba cari dengan case-insensitive di kolom F
       if (!invoiceFound) {
+        logToSheet({
+          action: "exact_match_not_found_column_f",
+          order_id: data.order_id,
+          trying_case_insensitive: true
+        });
+        
         for (var i = 0; i < values.length; i++) { 
+          if (values[i][5] && values[i][5].toString().toLowerCase() === data.order_id.toString().toLowerCase()) { 
+            invoiceFound = true;
+            
+            // Update status di kolom 8 (indeks array) / kolom I di spreadsheet
+            sheet.getRange(i + 2, 9).setValue(paymentStatus); 
+            
+            // Jika ada transaction_id, update juga di kolom G
+            if (data.transaction_id) {
+              sheet.getRange(i + 2, 7).setValue(data.transaction_id);
+            }
+            
+            logToSheet({
+              action: "update_success_case_insensitive_column_f",
+              order_id: data.order_id,
+              row: i + 2,
+              new_status: paymentStatus,
+              transaction_id: data.transaction_id || "not_provided"
+            });
+            
+            return ContentService.createTextOutput(JSON.stringify({ 
+              status: "success", 
+              message: "Payment status updated successfully" 
+            })).setMimeType(ContentService.MimeType.JSON); 
+          } 
+        }
+      }
+      
+      // Jika masih tidak ditemukan, coba cari di kolom G (Id Invoice)
+      if (!invoiceFound) {
+        logToSheet({
+          action: "trying_column_g",
+          order_id: data.order_id
+        });
+        
+        for (var i = 0; i < values.length; i++) { 
+          // Kolom 6 (indeks array) adalah Id Invoice (kolom G di spreadsheet)
           if (values[i][6] && values[i][6].toString().toLowerCase() === data.order_id.toString().toLowerCase()) { 
             invoiceFound = true;
             
             // Update status di kolom 8 (indeks array) / kolom I di spreadsheet
             sheet.getRange(i + 2, 9).setValue(paymentStatus); 
             
+            // Jika ada transaction_id, update juga di kolom G
+            if (data.transaction_id) {
+              sheet.getRange(i + 2, 7).setValue(data.transaction_id);
+            }
+            
             logToSheet({
-              action: "update_success_case_insensitive",
+              action: "update_success_column_g",
               order_id: data.order_id,
               row: i + 2,
-              new_status: paymentStatus
+              new_status: paymentStatus,
+              transaction_id: data.transaction_id || "not_provided"
             });
             
             return ContentService.createTextOutput(JSON.stringify({ 
@@ -114,7 +177,8 @@ function doPost(e) {
       // Log bahwa invoice tidak ditemukan
       logToSheet({
         action: "invoice_not_found",
-        order_id: data.order_id
+        order_id: data.order_id,
+        searched_columns: "F and G"
       });
       
       return ContentService.createTextOutput(JSON.stringify({ 
@@ -126,7 +190,7 @@ function doPost(e) {
     // Jika tidak ada transaction_status, ini adalah data baru dari form 
     logToSheet({
       action: "new_form_data",
-      formData: data
+      formData: JSON.stringify(data)
     });
     
     sheet.appendRow([ 
@@ -156,7 +220,8 @@ function doPost(e) {
     // Log error
     logToSheet({
       action: "error",
-      error: error.toString()
+      error: error.toString(),
+      stack: error.stack
     });
     
     return ContentService.createTextOutput(JSON.stringify({ 
@@ -174,7 +239,7 @@ function logToSheet(data) {
     
     logSheet.appendRow([
       new Date(),
-      JSON.stringify(data)
+      typeof data === 'object' ? JSON.stringify(data) : data
     ]);
   } catch (error) {
     Logger.log('Error logging to sheet: ' + error.toString());

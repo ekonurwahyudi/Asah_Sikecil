@@ -1,58 +1,182 @@
-<?php
-// Script untuk menguji callback ke Google Sheets
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Midtrans Callback</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+        }
+        .info-box {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Midtrans Callback</h1>
+    
+    <div class="info-box">
+        <p><strong>Penting:</strong> Alat ini digunakan untuk menguji callback Midtrans ke Google Sheets. Pastikan Anda memasukkan Order ID yang sesuai dengan No_Invoice di Google Sheets (kolom F).</p>
+    </div>
 
-// Data untuk Google Sheets - simulasi data callback Midtrans
-$sheetsData = [
-    'order_id' => 'INV-1753526605', // Ganti dengan order_id yang ada di Google Sheets
-    'transaction_id' => 'test-transaction-id-' . time(),
-    'transaction_status' => 'settlement',
-    'gross_amount' => '36300',
-    'payment_type' => 'bank_transfer',
-    'status' => 'SUKSES'
-];
+    <form id="callbackForm">
+        <div class="form-group">
+            <label for="order_id">Order ID (No_Invoice di kolom F):</label>
+            <input type="text" id="order_id" name="order_id" placeholder="Contoh: INV-1753532064" required>
+        </div>
 
-// Kirim data ke Google Sheets - Gunakan URL yang sama dengan create.php
-$scriptURL = 'https://script.google.com/macros/s/AKfycbxl850FJ1IIBplIT83l4ayL_wTNZ9fcSeChCRzf7FNh0eDWt2QLaWAzASy44OdyjJFa/exec';
+        <div class="form-group">
+            <label for="transaction_id">Transaction ID (Opsional):</label>
+            <input type="text" id="transaction_id" name="transaction_id" placeholder="Contoh: test-transaction-id-1753532">
+        </div>
 
-$ch = curl_init($scriptURL);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($sheetsData));
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json',
-    'Accept: application/json'
-]);
+        <div class="form-group">
+            <label for="transaction_status">Transaction Status:</label>
+            <select id="transaction_status" name="transaction_status" required>
+                <option value="settlement">settlement (SUKSES)</option>
+                <option value="pending">pending (PENDING)</option>
+                <option value="deny">deny (FAILED)</option>
+                <option value="cancel">cancel (FAILED)</option>
+                <option value="expire">expire (FAILED)</option>
+            </select>
+        </div>
 
-// Tambahkan opsi untuk debugging
-curl_setopt($ch, CURLOPT_VERBOSE, true);
-$verbose = fopen('php://temp', 'w+');
-curl_setopt($ch, CURLOPT_STDERR, $verbose);
+        <div class="form-group">
+            <label for="gross_amount">Gross Amount:</label>
+            <input type="text" id="gross_amount" name="gross_amount" value="10000" required>
+        </div>
 
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$error = curl_error($ch);
-curl_close($ch);
+        <div class="form-group">
+            <label for="status_code">Status Code:</label>
+            <input type="text" id="status_code" name="status_code" value="200" required>
+        </div>
 
-// Log informasi debug
-rewind($verbose);
-$verboseLog = stream_get_contents($verbose);
+        <div class="form-group">
+            <label for="payment_type">Payment Type:</label>
+            <input type="text" id="payment_type" name="payment_type" value="bank_transfer" required>
+        </div>
 
-// Output hasil
-echo "<h1>Test Callback ke Google Sheets</h1>";
-echo "<h2>Data yang dikirim:</h2>";
-echo "<pre>" . json_encode($sheetsData, JSON_PRETTY_PRINT) . "</pre>";
+        <div class="form-group">
+            <label for="callback_url">Callback URL:</label>
+            <select id="callback_url" name="callback_url" required>
+                <option value="callback_fix_updated.php">callback_fix_updated.php (Versi Terbaru)</option>
+                <option value="callback_fix.php">callback_fix.php (Versi Lama)</option>
+                <option value="callback.php">callback.php (Versi Original)</option>
+            </select>
+        </div>
 
-echo "<h2>HTTP Status Code:</h2>";
-echo "<pre>$httpCode</pre>";
+        <button type="submit">Send Callback</button>
+    </form>
 
-echo "<h2>Response:</h2>";
-echo "<pre>$response</pre>";
+    <div id="response" class="response" style="display: none;"></div>
 
-if ($error) {
-    echo "<h2>Error:</h2>";
-    echo "<pre>$error</pre>";
-}
-
-echo "<h2>Verbose Log:</h2>";
-echo "<pre>$verboseLog</pre>";
+    <script>
+        document.getElementById('callbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const jsonData = {};
+            
+            for (const [key, value] of formData.entries()) {
+                jsonData[key] = value;
+            }
+            
+            // Tambahkan signature key jika diperlukan
+            const serverKey = 'SB-Mid-server-mavVN5HEMxI5scqfPoL8r0hA';
+            const orderId = jsonData.order_id;
+            const statusCode = jsonData.status_code;
+            const grossAmount = jsonData.gross_amount;
+            const signatureInput = orderId + statusCode + grossAmount + serverKey;
+            
+            // Fungsi untuk menghitung SHA-512 hash
+            async function sha512(str) {
+                const buffer = new TextEncoder().encode(str);
+                const hashBuffer = await crypto.subtle.digest('SHA-512', buffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+            
+            // Hitung signature dan kirim callback
+            sha512(signatureInput).then(signature => {
+                jsonData.signature_key = signature;
+                
+                // Tambahkan field lain yang diperlukan
+                jsonData.transaction_time = new Date().toISOString();
+                jsonData.currency = "IDR";
+                
+                const callbackUrl = document.getElementById('callback_url').value;
+                
+                // Kirim callback
+                fetch(callbackUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseDiv = document.getElementById('response');
+                    responseDiv.innerHTML = '<h3>Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    responseDiv.style.display = 'block';
+                    responseDiv.className = data.status === 'success' ? 'response' : 'response error';
+                })
+                .catch(error => {
+                    const responseDiv = document.getElementById('response');
+                    responseDiv.innerHTML = '<h3>Error:</h3><pre>' + error + '</pre>';
+                    responseDiv.style.display = 'block';
+                    responseDiv.className = 'response error';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

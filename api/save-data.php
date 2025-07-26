@@ -17,7 +17,7 @@ if (!isset($data['name']) || !isset($data['phone']) || !isset($data['email']) ||
 }
 
 // URL Google Apps Script
-$scriptURL = 'https://script.google.com/macros/s/AKfycbxl850FJ1IIBplIT83l4ayL_wTNZ9fcSeChCRzf7FNh0eDWt2QLaWAzASy44OdyjJFa/exec';
+$scriptURL = 'https://script.google.com/macros/s/AKfycbxdcHTvRT40C0AmJKpzSkIo1TGjhaFYE7vtl3v6OqOg3dmAZLx204LiVIRkbHxaAs4P/exec';
 
 // Kirim data ke Google Sheets
 $ch = curl_init($scriptURL);

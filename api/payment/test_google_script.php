@@ -3,7 +3,7 @@
 
 // Fungsi untuk mendapatkan semua invoice dari Google Sheet
 function getAllInvoices() {
-    $scriptURL = 'https://script.google.com/macros/s/AKfycbzDuMd8m0EwZ4EbT1UJljWIBYYUhlxgowoz9Vv0GmhfDTfr5pgOhKyvTAiyM6ZX9tb9/exec';
+    $scriptURL = 'https://script.google.com/macros/s/AKfycbxdcHTvRT40C0AmJKpzSkIo1TGjhaFYE7vtl3v6OqOg3dmAZLx204LiVIRkbHxaAs4P/exec';
     
     // Data untuk mendapatkan semua invoice
     $data = [
@@ -33,7 +33,7 @@ function getAllInvoices() {
 
 // Fungsi untuk memperbarui status invoice
 function updateInvoiceStatus($orderId, $transactionId, $status) {
-    $scriptURL = 'https://script.google.com/macros/s/AKfycbzDuMd8m0EwZ4EbT1UJljWIBYYUhlxgowoz9Vv0GmhfDTfr5pgOhKyvTAiyM6ZX9tb9/exec';
+    $scriptURL = 'https://script.google.com/macros/s/AKfycbxdcHTvRT40C0AmJKpzSkIo1TGjhaFYE7vtl3v6OqOg3dmAZLx204LiVIRkbHxaAs4P/exec';
     
     // Data untuk memperbarui status invoice
     $data = [
