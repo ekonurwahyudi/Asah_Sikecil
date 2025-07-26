@@ -5,12 +5,21 @@ file_put_contents('callback_log.txt', date('Y-m-d H:i:s') . ' - ' . file_get_con
 // Ambil data dari request body
 $input = file_get_contents('php://input');
 
+// Log input mentah untuk debugging
+file_put_contents('callback_raw.txt', date('Y-m-d H:i:s') . ' - RAW INPUT: ' . $input . "\n", FILE_APPEND);
+
 // Coba parse sebagai JSON terlebih dahulu
 $data = json_decode($input, true);
+
+// Log hasil parsing JSON
+file_put_contents('callback_parsed.txt', date('Y-m-d H:i:s') . ' - PARSED JSON: ' . json_encode($data) . "\n", FILE_APPEND);
 
 // Jika bukan JSON, coba parse sebagai query string
 if (json_last_error() !== JSON_ERROR_NONE) {
     parse_str($input, $data);
+    
+    // Log hasil parsing query string
+    file_put_contents('callback_parsed.txt', date('Y-m-d H:i:s') . ' - PARSED QUERY: ' . json_encode($data) . "\n", FILE_APPEND);
     
     // Jika menggunakan format query string dari Duitku/provider lain
     if (isset($data['merchantOrderId'])) {
@@ -22,6 +31,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 
 // Validasi data
 if (!isset($data['order_id']) || !isset($data['transaction_status'])) {
+    file_put_contents('callback_error.txt', date('Y-m-d H:i:s') . ' - ERROR: Invalid callback data - ' . json_encode($data) . "\n", FILE_APPEND);
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => 'Invalid callback data']);
     exit;
@@ -37,6 +47,7 @@ if (isset($data['signature_key'])) {
     $expectedSignature = hash('sha512', $input);
     
     if ($data['signature_key'] !== $expectedSignature) {
+        file_put_contents('callback_error.txt', date('Y-m-d H:i:s') . ' - ERROR: Invalid signature - ' . json_encode($data) . "\n", FILE_APPEND);
         http_response_code(403);
         echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
         exit;
@@ -74,8 +85,11 @@ $sheetsData = [
     'status' => $paymentStatus
 ];
 
+// Log data yang akan dikirim ke Google Sheets
+file_put_contents('callback_sheets_data.txt', date('Y-m-d H:i:s') . ' - SHEETS DATA: ' . json_encode($sheetsData) . "\n", FILE_APPEND);
+
 // Kirim data ke Google Sheets - Gunakan URL yang sama dengan create.php
-$scriptURL = 'https://script.google.com/macros/s/AKfycbzDuMd8m0EwZ4EbT1UJljWIBYYUhlxgowoz9Vv0GmhfDTfr5pgOhKyvTAiyM6ZX9tb9/exec';
+$scriptURL = 'https://script.google.com/macros/s/AKfycbxl850FJ1IIBplIT83l4ayL_wTNZ9fcSeChCRzf7FNh0eDWt2QLaWAzASy44OdyjJFa/exec';
 
 $ch = curl_init($scriptURL);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -87,11 +101,23 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Accept: application/json'
 ]);
 
+// Tambahkan opsi untuk debugging
+curl_setopt($ch, CURLOPT_VERBOSE, true);
+$verbose = fopen('php://temp', 'w+');
+curl_setopt($ch, CURLOPT_STDERR, $verbose);
+
 $response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $error = curl_error($ch);
 curl_close($ch);
 
+// Log informasi debug
+rewind($verbose);
+$verboseLog = stream_get_contents($verbose);
+file_put_contents('callback_curl.txt', date('Y-m-d H:i:s') . ' - CURL: HTTP ' . $httpCode . "\nResponse: " . $response . "\nError: " . $error . "\nVerbose: " . $verboseLog . "\n", FILE_APPEND);
+
 if ($error) {
+    file_put_contents('callback_error.txt', date('Y-m-d H:i:s') . ' - ERROR: ' . $error . "\n", FILE_APPEND);
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Failed to update payment status: ' . $error]);
     exit;
