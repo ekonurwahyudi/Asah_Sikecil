@@ -1,0 +1,13 @@
+# Aktifkan rewrite engine
+RewriteEngine On
+
+# Jika file atau direktori ada, gunakan itu
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Jika path dimulai dengan /payment/callback, arahkan ke callback.php
+RewriteRule ^payment/callback$ payment/callback.php [L]
+
+# Untuk semua permintaan lain, gunakan index.php dengan parameter path
+RewriteRule ^(.*)$ index.php?path=$1 [QSA,L]

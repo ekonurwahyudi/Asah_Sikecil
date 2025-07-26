@@ -27,6 +27,22 @@ if (!isset($data['order_id']) || !isset($data['transaction_status'])) {
     exit;
 }
 
+// Verifikasi signature key jika ada
+$serverKey = 'SB-Mid-server-mavVN5HEMxI5scqfPoL8r0hA'; // Gunakan server key yang sama dengan create.php
+if (isset($data['signature_key'])) {
+    $orderId = $data['order_id'];
+    $statusCode = $data['status_code'];
+    $grossAmount = $data['gross_amount'];
+    $input = $orderId.$statusCode.$grossAmount.$serverKey;
+    $expectedSignature = hash('sha512', $input);
+    
+    if ($data['signature_key'] !== $expectedSignature) {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
+        exit;
+    }
+}
+
 // Konversi status ke format yang sesuai dengan Google Sheets
 $paymentStatus = 'UNKNOWN';
 switch ($data['transaction_status']) {

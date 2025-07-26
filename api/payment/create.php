@@ -101,7 +101,8 @@ $midtransData = [
         ]
     ],
     'callbacks' => [
-        'finish' => 'https://' . $_SERVER['HTTP_HOST'] . '?status=success'
+        'finish' => 'https://' . $_SERVER['HTTP_HOST'] . '?status=success',
+        'notification' => 'https://' . $_SERVER['HTTP_HOST'] . '/api/payment/callback'
     ]
 ];
 
@@ -114,7 +115,8 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($midtransData));
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'Accept: application/json',
-    'Authorization: Basic ' . base64_encode($serverKey . ':')
+    'Authorization: Basic ' . base64_encode($serverKey . ':'),
+    'X-Append-Notification: https://' . $_SERVER['HTTP_HOST'] . '/api/payment/callback'
 ]);
 
 $response = curl_exec($ch);

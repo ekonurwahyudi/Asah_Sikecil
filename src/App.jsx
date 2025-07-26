@@ -213,15 +213,30 @@ const handleChoosePackage = (packageName) => {
       const responseData = await response.json();
       
       if (responseData.status === 'success') {
-        // Jika paket free atau pembayaran berhasil dibuat
+        
         if (responseData.snap_token) {
-          // Langsung redirect ke halaman pembayaran Midtrans
-          if (responseData.redirect_url) {
-            window.location.href = responseData.redirect_url;
-          } else {
-            alert('Terjadi kesalahan: URL redirect tidak tersedia');
-            setIsLoading(false);
-          }
+            window.snap.pay(responseData.snap_token, {
+              onSuccess: function(result) {
+                console.log('success', result);
+                setShowSuccessModal(true);
+                setIsLoading(false);
+              }, 
+              onPending: function(result) {
+                console.log('pending', result);
+                alert('Pembayaran sedang diproses. Silakan cek email Anda untuk informasi lebih lanjut.');
+                setIsLoading(false);
+              },
+              onError: function(result) {
+                console.log('error', result);
+                alert('Pembayaran gagal: ' + result.status_message);
+                setIsLoading(false);
+              },
+              onClose: function() {
+                console.log('customer closed the popup without finishing the payment');
+                alert('Pembayaran dibatalkan. Silakan coba lagi.');
+                setIsLoading(false);
+              }
+            });
         } else if (responseData.message && responseData.message.includes('Free package')) {
           // Hanya untuk paket free yang benar-benar sukses
           setShowSuccessModal(true);
