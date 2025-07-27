@@ -328,7 +328,7 @@ const handleChoosePackage = (packageName) => {
     {
       id: "paket_lengkap",
       name: "Paket Lengkap",
-      price: "1,300",
+      price: "36,300",
       originalPrice: "120,000"
     },
     {

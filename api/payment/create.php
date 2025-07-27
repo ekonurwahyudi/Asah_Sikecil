@@ -38,7 +38,7 @@ switch ($data['package']) {
         $price = 47500;
         break;
     case 'paket_lengkap':
-        $price = 36300;
+        $price = 1000;
         break;
     case 'paket_free':
     default:
