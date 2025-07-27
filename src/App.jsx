@@ -29,6 +29,7 @@ function App() {
     status: "belum bayar" // Status default
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(1 * 60 * 60 + 43 * 60); // 2 jam dalam detik
   const [currentBuyer, setCurrentBuyer] = useState(0);
   const [showBuyerPopup, setShowBuyerPopup] = useState(true);
@@ -172,9 +173,14 @@ const handleChoosePackage = (packageName) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Cegah multiple submission
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     // Validasi input
     if (!formData.name || !formData.phone || !formData.email || !formData.package) {
       alert('Mohon lengkapi semua data yang diperlukan');
+      setIsSubmitting(false);
       return;
     }
 
@@ -182,12 +188,14 @@ const handleChoosePackage = (packageName) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       alert('Format email tidak valid');
+      setIsSubmitting(false);
       return;
     }
 
     // Validasi nomor telepon (minimal 10 digit)
     if (formData.phone.length < 10) {
       alert('Nomor telepon tidak valid');
+      setIsSubmitting(false);
       return;
     }
 
@@ -220,35 +228,42 @@ const handleChoosePackage = (packageName) => {
                 console.log('success', result);
                 setShowSuccessModal(true);
                 setIsLoading(false);
+                setIsSubmitting(false);
               }, 
               onPending: function(result) {
                 console.log('pending', result);
                 alert('Pembayaran sedang diproses. Silakan cek email Anda untuk informasi lebih lanjut.');
                 setIsLoading(false);
+                setIsSubmitting(false);
               },
               onError: function(result) {
                 console.log('error', result);
                 alert('Pembayaran gagal: ' + result.status_message);
                 setIsLoading(false);
+                setIsSubmitting(false);
               },
               onClose: function() {
                 console.log('customer closed the popup without finishing the payment');
                 alert('Pembayaran dibatalkan. Silakan coba lagi.');
                 setIsLoading(false);
+                setIsSubmitting(false);
               }
             });
         } else if (responseData.message && responseData.message.includes('Free package')) {
           // Hanya untuk paket free yang benar-benar sukses
           setShowSuccessModal(true);
           setIsLoading(false);
+          setIsSubmitting(false);
         } else {
           // Error lainnya
           alert('Terjadi kesalahan dalam membuat pembayaran.');
           setIsLoading(false);
+          setIsSubmitting(false);
         }
       } else {
         alert('Terjadi kesalahan: ' + responseData.message);
         setIsLoading(false);
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Error details:', error);
@@ -258,6 +273,7 @@ const handleChoosePackage = (packageName) => {
         alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
       }
       setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
   const testimonials = [

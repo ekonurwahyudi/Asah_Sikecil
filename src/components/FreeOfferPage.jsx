@@ -135,10 +135,7 @@ function FreeOfferPage() {
     try {
       setIsLoading(true); // Set loading menjadi true saat proses dimulai
       
-      // URL Google Apps Script
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwafJif9Vtf-tivOVKeShcQAPHTZX4BzXmNAfvP6QKZVbI8jpcXBz6EF8w3_j-1aJBkag/exec';
-      
-      // Format nomor telepon
+      // Format nomor telepon (tetap dilakukan di client untuk validasi)
       let formattedPhone = userFormData.phone;
       
       // Jika nomor dimulai dengan '08', ubah menjadi '628'
@@ -153,41 +150,35 @@ function FreeOfferPage() {
       else if (formattedPhone.startsWith('+62')) {
         formattedPhone = formattedPhone.substring(1);
       }
-      // Jika nomor dimulai dengan '62', tidak perlu diubah
       
-      // Menggunakan FormData alih-alih JSON
-      const formData = new FormData();
-      formData.append('name', userFormData.name);
-      formData.append('phone', formattedPhone); // Gunakan nomor yang sudah diformat
-      formData.append('email', userFormData.email);
-      formData.append('city', userFormData.city);
-      
-      // Mengirim data ke Google Sheets
-      const params = new URLSearchParams();
-      params.append('name', userFormData.name);
-      params.append('phone', formattedPhone);
-      params.append('email', userFormData.email);
-      params.append('city', userFormData.city);
-      
-      const response = await fetch(scriptURL, {
+      // Kirim data ke API
+      const response = await fetch('/api/index.php?path=free-offer', {
         method: 'POST',
-        body: params.toString(), // Mengubah params menjadi string URL-encoded
-        mode: 'no-cors',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded', // Gunakan content type ini
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: userFormData.name,
+          phone: userFormData.phone, // Server akan memformat ulang
+          email: userFormData.email,
+          city: userFormData.city
+        })
       });
       
-      // Catatan: dengan mode 'no-cors', kita tidak bisa memeriksa response.ok
-      // karena respons akan selalu opaque (tidak dapat diakses)
-      console.log('Permintaan berhasil dikirim');
-      setShowSuccessModal(true);
+      const responseData = await response.json();
       
+      if (responseData.status === 'success') {
+        console.log('Data berhasil dikirim', responseData);
+        setShowSuccessModal(true);
+      } else {
+        console.error('Error saat mengirim data', responseData);
+        alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+      }
     } catch (error) {
       console.error('Error:', error);
       alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
     } finally {
-      setIsLoading(false); // Set loading menjadi false setelah proses selesai
+      setIsLoading(false);
     }
   };
 

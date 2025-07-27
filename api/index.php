@@ -27,6 +27,9 @@ switch ($path) {
     case 'save-data':
         require_once 'save-data.php';
         break;
+    case 'free-offer':
+        require_once 'free-offer.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['status' => 'error', 'message' => 'Endpoint not found']);
