@@ -73,10 +73,13 @@ if ($price === 0) {
     exit;
 }
 
+// Tambahkan di awal file, setelah error reporting
+require_once __DIR__ . '/../config.php';
+
 // Untuk paket berbayar, gunakan Midtrans Snap
-$merchantId = 'G204604748';
-$clientKey = 'SB-Mid-client-Tg3EWP-wjBlTYscF';
-$serverKey = 'SB-Mid-server-mavVN5HEMxI5scqfPoL8r0hA';
+$merchantId = $config['midtrans']['merchant_id'];
+$clientKey = $config['midtrans']['client_key'];
+$serverKey = $config['midtrans']['server_key'];
 
 // Format nomor telepon
 $formattedPhone = formatPhoneNumber($data['phone']);
@@ -107,7 +110,7 @@ $midtransData = [
 ];
 
 // Kirim request ke Midtrans Snap
-$ch = curl_init('https://app.sandbox.midtrans.com/snap/v1/transactions');
+$ch = curl_init($config['midtrans']['api_url']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_POST, 1);
@@ -187,7 +190,8 @@ function formatPhoneNumber($phone) {
 
 // Fungsi untuk menyimpan data ke Google Sheets
 function saveToGoogleSheets($data) {
-    $scriptURL = 'https://script.google.com/macros/s/AKfycbxdcHTvRT40C0AmJKpzSkIo1TGjhaFYE7vtl3v6OqOg3dmAZLx204LiVIRkbHxaAs4P/exec';
+    global $config;
+    $scriptURL = $config['google_sheets']['script_url'];
     
     $ch = curl_init($scriptURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

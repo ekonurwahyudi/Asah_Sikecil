@@ -1,4 +1,8 @@
 <?php
+require_once 'config.php';
+require_once 'rate_limit.php';
+
+// Batasi CORS hanya ke domain yang diizinkan
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Origin");
@@ -27,4 +31,14 @@ switch ($path) {
         http_response_code(404);
         echo json_encode(['status' => 'error', 'message' => 'Endpoint not found']);
         break;
+}
+
+// Cek rate limit untuk endpoint sensitif
+if (in_array($path, ['payment/create', 'payment/callback'])) {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    if (!checkRateLimit($ip, $path, 30, 60)) { // 30 requests per 60 seconds
+        http_response_code(429);
+        echo json_encode(['status' => 'error', 'message' => 'Too many requests']);
+        exit;
+    }
 }
