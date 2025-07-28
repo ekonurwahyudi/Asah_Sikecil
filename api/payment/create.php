@@ -35,10 +35,10 @@ if (!isset($data['name']) || !isset($data['phone']) || !isset($data['email']) ||
 $price = 0;
 switch ($data['package']) {
     case 'paket_premium':
-        $price = 47500;
+        $price = 49600;
         break;
     case 'paket_lengkap':
-        $price = 1300;
+        $price = 36300;
         break;
     case 'paket_free':
     default:

@@ -351,8 +351,8 @@ const handleChoosePackage = (packageName) => {
     {
       id: "paket_premium",
       name: "Paket Premium",
-      price: "47,500",
-      originalPrice: "250,000"
+      price: "49,600",
+      originalPrice: "230,000"
     }
   ];
 
@@ -985,8 +985,8 @@ const handleChoosePackage = (packageName) => {
                 <CardTitle className="text-2xl text-gray-800">Paket Premium</CardTitle>
                 <div className="text-3xl font-bold text-pink-600">
                   <div className="bg-yellow-400 text-yellow-900 font-semibold text-xs px-2 py-0.5 rounded-full inline-block mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-300 animate-bounce">DISKON 80%</div>
-                  <strike className="text-gray-500 text-base">Rp. 250.000</strike> <br />
-                  Rp. 47.500
+                  <strike className="text-gray-500 text-base">Rp. 230.000</strike> <br />
+                  Rp. 49.600
                 </div>
                 <CardDescription className="text-gray-600 mt-2">
                   Paling populer
