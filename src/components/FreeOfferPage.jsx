@@ -63,7 +63,7 @@ function FreeOfferPage() {
   };
 
   const handleCopyCaption = () => {
-    const caption = "💡 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi *GRATIS* kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & terpercaya \n✅ Tersedia 24 jam \n✅ Chat via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – Untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
+    const caption = "💡 *Calista AI – #1 Asisten Psikologi & Perkembangan Anak!* \n\n💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi *GRATIS* kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak. \n\n✅ Jawaban cepat & personal \n✅ Tersedia 24 jam \n✅ Chat via WhatsApp \n\n🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – Untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah. \n\n📍 Kunjungi sekarang: www.asahsikecil.com \n📢 Kuota terbatas, jangan sampai kelewatan!";
     navigator.clipboard.writeText(caption);
     alert("Caption berhasil disalin!");
   };
@@ -167,7 +167,7 @@ function FreeOfferPage() {
             <div className="bg-gray-100 p-3 rounded-md text-sm">
               <p>💡 <b>Calista AI – #1 Asisten Psikologi & Perkembangan Anak!</b></p> <br/>
               <p>💬 Punya pertanyaan soal tumbuh kembang anak? Sekarang kamu bisa konsultasi GRATIS kapan saja lewat Calista AI – asisten pintar berbasis AI khusus untuk bantu kamu memahami kebutuhan psikologis anak.</p><br/>
-              <p>✅ Jawaban cepat & terpercaya</p>
+              <p>✅ Jawaban cepat & personal</p>
               <p>✅ Tersedia 24 Jam</p>
               <p>✅ Chat via WhatsApp</p><br/>
               <p>🎉 Dapatkan juga Worksheet Pintar untuk Anak Cerdas – Untuk melatih kemampuan membaca, menulis, dan berhitung anak di rumah.</p><br/>
