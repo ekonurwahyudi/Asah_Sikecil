@@ -1,14 +1,30 @@
 <?php
+// Tambahkan di awal file
+require_once __DIR__ . '/../config.php';
+
 // Script untuk menangani callback dari Midtrans dengan debugging yang lebih baik
 // Versi yang diperbarui untuk menggunakan Google Script yang baru
 
-// Fungsi untuk logging
+// Fungsi untuk logging yang lebih aman
 function logDebug($message, $data = null) {
+    global $config;
     $logFile = __DIR__ . '/callback_debug.log';
     $timestamp = date('Y-m-d H:i:s');
     $logMessage = "[$timestamp] $message";
     
-    if ($data !== null) {
+    if ($data !== null && !$config['security']['log_sensitive_data']) {
+        // Samarkan data sensitif
+        if (is_array($data)) {
+            if (isset($data['customer_details'])) {
+                $data['customer_details'] = '[REDACTED]';
+            }
+            if (isset($data['signature_key'])) {
+                $data['signature_key'] = '[REDACTED]';
+            }
+            if (isset($data['server_key'])) {
+                $data['server_key'] = '[REDACTED]';
+            }
+        }
         $logMessage .= ": " . json_encode($data, JSON_PRETTY_PRINT);
     }
     
@@ -48,27 +64,34 @@ if (!isset($data['order_id']) || !isset($data['transaction_status'])) {
     exit;
 }
 
-// Verifikasi signature key jika ada
-$serverKey = 'SB-Mid-server-mavVN5HEMxI5scqfPoL8r0hA'; // Gunakan server key yang sama dengan create.php
-if (isset($data['signature_key'])) {
-    $orderId = $data['order_id'];
-    $statusCode = $data['status_code'];
-    $grossAmount = $data['gross_amount'];
-    $input = $orderId.$statusCode.$grossAmount.$serverKey;
-    $expectedSignature = hash('sha512', $input);
-    
-    logDebug('Signature verification', [
-        'received' => $data['signature_key'],
-        'expected' => $expectedSignature,
-        'match' => ($data['signature_key'] === $expectedSignature)
-    ]);
-    
-    if ($data['signature_key'] !== $expectedSignature) {
-        logDebug('Invalid signature', $data);
-        http_response_code(403);
-        echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
-        exit;
-    }
+// Verifikasi signature key - WAJIB untuk semua callback
+$serverKey = $config['midtrans']['server_key'];
+
+// Jika tidak ada signature_key, tolak request
+if (!isset($data['signature_key'])) {
+    logDebug('Missing signature key', $data);
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Missing signature key']);
+    exit;
+}
+
+$orderId = $data['order_id'];
+$statusCode = $data['status_code'];
+$grossAmount = $data['gross_amount'];
+$input = $orderId.$statusCode.$grossAmount.$serverKey;
+$expectedSignature = hash('sha512', $input);
+
+logDebug('Signature verification', [
+    'received' => '[REDACTED]',
+    'expected' => '[REDACTED]',
+    'match' => ($data['signature_key'] === $expectedSignature)
+]);
+
+if ($data['signature_key'] !== $expectedSignature) {
+    logDebug('Invalid signature', ['order_id' => $data['order_id']]);
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
+    exit;
 }
 
 // Konversi status ke format yang sesuai dengan Google Sheets
@@ -137,6 +160,10 @@ curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 // Tambahkan opsi SSL jika diperlukan
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+// Aktifkan SSL verification
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
