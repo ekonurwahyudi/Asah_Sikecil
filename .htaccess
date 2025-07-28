@@ -1,11 +1,4 @@
 RewriteEngine On
-
-# Aturan untuk API
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/(.*)$ api/index.php?path=$1 [QSA,L]
-
-# Aturan untuk SPA - mengarahkan semua permintaan non-file dan non-direktori ke index.html
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.html [QSA,L]
