@@ -76,6 +76,16 @@ if ($price === 0) {
 // Tambahkan di awal file, setelah error reporting
 require_once __DIR__ . '/../config.php';
 
+// Di awal file, setelah session_start()
+session_start();
+
+// Validasi token CSRF
+if (!isset($data['csrf_token']) || $data['csrf_token'] !== $_SESSION['csrf_token']) {
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token']);
+    exit;
+}
+
 // Untuk paket berbayar, gunakan Midtrans Snap
 $merchantId = $config['midtrans']['merchant_id'];
 $clientKey = $config['midtrans']['client_key'];
@@ -115,11 +125,13 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($midtransData));
+// Tambahkan header idempotency key
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'Accept: application/json',
     'Authorization: Basic ' . base64_encode($serverKey . ':'),
-    'X-Append-Notification: https://' . $_SERVER['HTTP_HOST'] . '/api/payment/callback'
+    'X-Append-Notification: https://' . $_SERVER['HTTP_HOST'] . '/api/payment/callback',
+    'Idempotency-Key: ' . $invoiceNumber // Tambahkan ini
 ]);
 
 $response = curl_exec($ch);
@@ -208,4 +220,12 @@ function saveToGoogleSheets($data) {
     curl_close($ch);
     
     return ['response' => $response, 'error' => $error];
+}
+
+// Sebelum membuat transaksi, periksa apakah sudah ada invoice dengan data yang sama
+// Implementasi checkDuplicateTransaction() perlu dibuat sesuai dengan database Anda
+if (checkDuplicateTransaction($data['email'], $data['package'])) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Duplicate transaction detected']);
+    exit;
 }

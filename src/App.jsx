@@ -51,6 +51,7 @@ function App() {
   ];
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
     
@@ -471,6 +472,7 @@ const handleChoosePackage = (packageName) => {
               </nav>
               <Button 
                 className="bg-pink-500 hover:bg-pink-600 hover:scale-105 transform transition-all duration-200 text-white font-semibold text-lg px-6 py-3"
+                disabled={isSubmitting || isLoading}
                 onClick={() => {
                   if (formRef.current) {
                     const yOffset = -100; // Sesuaikan nilai ini dengan tinggi header

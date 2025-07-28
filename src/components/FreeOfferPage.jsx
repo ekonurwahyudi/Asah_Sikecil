@@ -9,7 +9,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog.jsx'
 function FreeOfferPage() {
   const navigate = useNavigate();
   const [uploadedImages, setUploadedImages] = useState([]);
-  const [imageUrls, setImageUrls] = useState([null, null, null]); // State untuk menyimpan URL gambar
   const [formStep, setFormStep] = useState(1); // 1: upload gambar, 2: input data
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Tambahkan state untuk loading
@@ -31,16 +30,6 @@ function FreeOfferPage() {
     img.src = '/banner_calista.png';
   }, []);
 
-  // Tambahkan useEffect untuk membersihkan URL objek saat komponen unmount
-  useEffect(() => {
-    // Cleanup function untuk merevoke URL objek
-    return () => {
-      imageUrls.forEach(url => {
-        if (url) URL.revokeObjectURL(url);
-      });
-    };
-  }, [imageUrls]);
-
   const handleImageUpload = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       // Mengambil file yang dipilih (maksimal 3)
@@ -51,50 +40,12 @@ function FreeOfferPage() {
       
       // Jika slot yang tersisa cukup untuk semua file baru
       if (remainingSlots >= newFiles.length) {
-        // Buat salinan array uploadedImages dan imageUrls
-        const newUploadedImages = [...uploadedImages];
-        const newImageUrls = [...imageUrls];
-        
-        // Tambahkan file baru dan buat URL untuk masing-masing
-        newFiles.forEach((file, index) => {
-          const position = uploadedImages.length + index;
-          if (position < 3) {
-            // Revoke URL lama jika ada
-            if (newImageUrls[position]) URL.revokeObjectURL(newImageUrls[position]);
-            
-            // Buat URL baru
-            newUploadedImages[position] = file;
-            newImageUrls[position] = URL.createObjectURL(file);
-          }
-        });
-        
-        setUploadedImages(newUploadedImages);
-        setImageUrls(newImageUrls);
+        setUploadedImages([...uploadedImages, ...newFiles]);
       } 
       // Jika slot yang tersisa tidak cukup, ambil sebanyak yang bisa ditampung
       else if (remainingSlots > 0) {
         const filesToAdd = newFiles.slice(0, remainingSlots);
-        
-        // Buat salinan array uploadedImages dan imageUrls
-        const newUploadedImages = [...uploadedImages];
-        const newImageUrls = [...imageUrls];
-        
-        // Tambahkan file baru dan buat URL untuk masing-masing
-        filesToAdd.forEach((file, index) => {
-          const position = uploadedImages.length + index;
-          if (position < 3) {
-            // Revoke URL lama jika ada
-            if (newImageUrls[position]) URL.revokeObjectURL(newImageUrls[position]);
-            
-            // Buat URL baru
-            newUploadedImages[position] = file;
-            newImageUrls[position] = URL.createObjectURL(file);
-          }
-        });
-        
-        setUploadedImages(newUploadedImages);
-        setImageUrls(newImageUrls);
-        
+        setUploadedImages([...uploadedImages, ...filesToAdd]);
         alert(`Hanya ${remainingSlots} gambar yang ditambahkan. Maksimal 3 gambar yang dapat diupload.`);
       } 
       // Jika tidak ada slot tersisa
@@ -106,23 +57,9 @@ function FreeOfferPage() {
   };
 
   const handleRemoveImage = (index) => {
-    // Buat salinan array uploadedImages dan imageUrls
-    const newUploadedImages = [...uploadedImages];
-    const newImageUrls = [...imageUrls];
-    
-    // Revoke URL objek sebelum menghapus
-    if (newImageUrls[index]) {
-      URL.revokeObjectURL(newImageUrls[index]);
-      newImageUrls[index] = null;
-    }
-    
-    // Hapus file dari array
-    newUploadedImages.splice(index, 1);
-    newImageUrls.splice(index, 1);
-    newImageUrls.push(null); // Tambahkan null di akhir untuk menjaga panjang array tetap 3
-    
-    setUploadedImages(newUploadedImages);
-    setImageUrls(newImageUrls);
+    const newImages = [...uploadedImages];
+    newImages.splice(index, 1);
+    setUploadedImages(newImages);
   };
 
   const handleCopyCaption = () => {
@@ -135,7 +72,10 @@ function FreeOfferPage() {
     try {
       setIsLoading(true); // Set loading menjadi true saat proses dimulai
       
-      // Format nomor telepon (tetap dilakukan di client untuk validasi)
+      // URL Google Apps Script
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbxO_CJpOa4mHka40Dn4XZmUZYrJ8YbXSTnZpcvQ65uuEo4Si0f6lSmQlfViuov6QAzMgg/exec';
+      
+      // Format nomor telepon
       let formattedPhone = userFormData.phone;
       
       // Jika nomor dimulai dengan '08', ubah menjadi '628'
@@ -150,35 +90,41 @@ function FreeOfferPage() {
       else if (formattedPhone.startsWith('+62')) {
         formattedPhone = formattedPhone.substring(1);
       }
+      // Jika nomor dimulai dengan '62', tidak perlu diubah
       
-      // Kirim data ke API
-      const response = await fetch('/api/index.php?path=free-offer', {
+      // Menggunakan FormData alih-alih JSON
+      const formData = new FormData();
+      formData.append('name', userFormData.name);
+      formData.append('phone', formattedPhone); // Gunakan nomor yang sudah diformat
+      formData.append('email', userFormData.email);
+      formData.append('city', userFormData.city);
+      
+      // Mengirim data ke Google Sheets
+      const params = new URLSearchParams();
+      params.append('name', userFormData.name);
+      params.append('phone', formattedPhone);
+      params.append('email', userFormData.email);
+      params.append('city', userFormData.city);
+      
+      const response = await fetch(scriptURL, {
         method: 'POST',
+        body: params.toString(), // Mengubah params menjadi string URL-encoded
+        mode: 'no-cors',
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: userFormData.name,
-          phone: userFormData.phone, // Server akan memformat ulang
-          email: userFormData.email,
-          city: userFormData.city
-        })
+          'Content-Type': 'application/x-www-form-urlencoded', // Gunakan content type ini
+        }
       });
       
-      const responseData = await response.json();
+      // Catatan: dengan mode 'no-cors', kita tidak bisa memeriksa response.ok
+      // karena respons akan selalu opaque (tidak dapat diakses)
+      console.log('Permintaan berhasil dikirim');
+      setShowSuccessModal(true);
       
-      if (responseData.status === 'success') {
-        console.log('Data berhasil dikirim', responseData);
-        setShowSuccessModal(true);
-      } else {
-        console.error('Error saat mengirim data', responseData);
-        alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
-      }
     } catch (error) {
       console.error('Error:', error);
       alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Set loading menjadi false setelah proses selesai
     }
   };
 
@@ -259,10 +205,10 @@ function FreeOfferPage() {
                     key={index} 
                     className={`aspect-square border-2 ${uploadedImages[index] ? 'border-green-500' : 'border-dashed border-gray-300'} rounded-lg flex items-center justify-center relative overflow-hidden`}
                   >
-                    {uploadedImages[index] && imageUrls[index] ? (
+                    {uploadedImages[index] ? (
                       <>
                         <img 
-                          src={imageUrls[index]} 
+                          src={URL.createObjectURL(uploadedImages[index])} 
                           alt={`Upload ${index + 1}`} 
                           className="w-full h-full object-cover"
                         />
