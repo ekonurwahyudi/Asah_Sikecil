@@ -465,10 +465,26 @@ const handleChoosePackage = (packageName) => {
             </div>
             <div className="flex items-center space-x-8">
               <nav className="hidden md:flex space-x-8">
-                <a href="#manfaat" className="text-gray-600 hover:text-pink-600 transition-colors">Manfaat</a>
-                <a href="#produk" className="text-gray-600 hover:text-pink-600 transition-colors">Produk</a>
-                <a href="#paket" className="text-gray-600 hover:text-pink-600 transition-colors">Paket</a>
-                <a href="#testimoni" className="text-gray-600 hover:text-pink-600 transition-colors">Testimoni</a>
+                <a href="#manfaat" onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('manfaat').scrollIntoView({ behavior: 'smooth' });
+                }} className="text-gray-600 hover:text-pink-600 transition-colors">Manfaat</a>
+                <a href="#produk" onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('produk').scrollIntoView({ behavior: 'smooth' });
+                }} className="text-gray-600 hover:text-pink-600 transition-colors">Produk</a>
+                <a href="#paket" onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('paket').scrollIntoView({ behavior: 'smooth' });
+                }} className="text-gray-600 hover:text-pink-600 transition-colors">Paket</a>
+                <a href="#testimoni" onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('testimoni').scrollIntoView({ behavior: 'smooth' });
+                }} className="text-gray-600 hover:text-pink-600 transition-colors">Testimoni</a>
+                <a href="#contact" onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+                }} className="text-gray-600 hover:text-pink-600 transition-colors">Kontak</a>
               </nav>
               <Button 
                 className="bg-pink-500 hover:bg-pink-600 hover:scale-105 transform transition-all duration-200 text-white font-semibold text-lg px-6 py-3"
